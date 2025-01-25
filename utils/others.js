@@ -44,14 +44,18 @@ const 市場標題右下_Offset = { x: 398, y: 98 }
 const 市場搜尋左上_offset = { x: 100, y: 81 }
 const 市場搜尋右下_offset = { x: 250, y: 96 }
 
-export async function marketAndExtract() {
+export async function marketAndExtract({ startWith } = {}) {
   const { x, y } = getApplicationInfo()
 
-  const townName = await waitUntil({ x, y, maxWait: 10 * 1000, message: '梅斯特', place: 'town' })
-  if (townName == null) return void console.log('要先到鎮上喔')
+  if (startWith === 'town') {
+    const townName = await waitUntil({ x, y, maxWait: 10 * 1000, message: '梅斯特', place: 'town' })
+    if (townName == null) return void console.log('要先到鎮上喔')
 
-  _keyIn([']', ...Array(4).fill('down')])
-  pressEnter()
+    _keyIn([']', ...Array(4).fill('down')])
+    pressEnter()
+  } else if (startWith === 'market') {
+    console.log('直接從市場開始')
+  }
 
   const inMarket = await waitUntil({
     x,
@@ -66,14 +70,11 @@ export async function marketAndExtract() {
   const marketResult = await market()
 
   _moveMouseByOffset(x, y, 離開_offset)
-
-  // 為了回到城鎮，所以檢查會放在離開的後面
-  if (marketResult == null) return
-
   await delay()
   clickMouse()
   await delay()
 
+  // 回到了城鎮，開始分解
   await extract()
 
   console.log('結束囉!')
