@@ -3,6 +3,7 @@
 // 如果畫面不是當前正在執行的地圖了，就要停掉的機制 (要用非同步 + flag才不會打斷)
 
 import rb from 'robotjs'
+import { getApplicationInfo } from './others.js'
 
 const buffBetweenEach = {
   coldTime: 3 * 1000,
@@ -140,7 +141,11 @@ async function attack({ useDefault = false, afterDelay = null } = {}) {
   // 攻擊前放 buff
   buffStuff()
 
-  // TODO(flyc): 這邊要檢查如果畫面不是預期的 Application 的話，要停掉
+  // 檢查是不是在該在的 application
+  const { applicationTitle: oriTitle } = getApplicationInfo({ showConsole: false })
+  const applicationTitle = oriTitle.replace(/[^\w]/g, '')
+  const expected = 'MapleStory'
+  if (applicationTitle !== expected) process.exit()
 
   // 雖然已經很近了，但每個技能還是多少有一些時間差
   // 不設定這個的話霹靂可以更快，但位置會跑掉

@@ -40,7 +40,7 @@ export async function beforeStart(sec = 5) {
   }
 }
 
-export function getApplicationInfo(showConsole = true) {
+export function getApplicationInfo({ showConsole = true } = {}) {
   const applicationTitle = getForegroundWindowTitle()
   const { left: x, top: y, right: endX, bottom: endY } = getForegroundWindowRect()
   const width = endX - x

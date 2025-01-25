@@ -24,8 +24,8 @@ async function start() {
         value: 'money',
       },
       {
-        name: 'money start with town',
-        value: 'money-start-with-town',
+        name: 'money start with market',
+        value: 'money-start-with-market',
       },
       {
         name: 'market',
@@ -61,7 +61,7 @@ async function start() {
       money()
       break
 
-    case 'money-start-with-town':
+    case 'money-start-with-market':
       money({ startWith: 'market' })
       break
 
