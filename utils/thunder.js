@@ -1,6 +1,4 @@
 import rb from 'robotjs'
-import { delay } from './others.js'
-import { goToSearch } from './money-utils.js'
 
 const buffBetweenEach = {
   coldTime: 3 * 1000,
@@ -146,9 +144,12 @@ const attackList = [
     previousTimestamp: null,
   },
 ]
+
 async function attack({ useDefault = false, afterDelay = null } = {}) {
   // 攻擊前放 buff
   buffStuff()
+
+  // TODO(flyc): 這邊要檢查如果畫面不是預期的 Application 的話，要停掉
 
   // 雖然已經很近了，但每個技能還是多少有一些時間差
   // 不設定這個的話霹靂可以更快，但位置會跑掉
@@ -319,7 +320,7 @@ export function test() {
 // 2. 其他玩家
 // 3. 自己本身的位子是不是跑到最下面了
 // 4. 不透過 ctrl + tab 就可以暫停的方式
-export async function anotherGo() {
+export async function battleField() {
   // TODO 在 robot 在跑的時候，這個 listenerStuff 就不會作用了
   // 可能要改成判斷螢幕上的東西來做停止? 像是地名之類的
   justStuff()
@@ -573,7 +574,7 @@ export async function anotherGo() {
       hop()
 
       justAttack(2)
-      goUp({ type: 'jump' })
+      jUp()
 
       left(4, false)
       hop()
@@ -606,7 +607,7 @@ export async function anotherGo() {
       hop()
 
       justAttack(2)
-      goUp({ type: 'jump' })
+      jUp()
 
       left(4)
       hop()
@@ -616,7 +617,7 @@ export async function anotherGo() {
 
       justAttack(2)
       right(2)
-      goUp({ type: 'jump' })
+      jUp()
 
       left(2)
       right(3)
@@ -635,7 +636,7 @@ export async function anotherGo() {
 
       justAttack(2)
       right(2)
-      goUp({ type: 'jump' })
+      jUp()
 
       justAttack(1)
       hop()
@@ -648,7 +649,7 @@ export async function anotherGo() {
       hop()
 
       justAttack(1)
-      goUp({ type: 'jump' })
+      jUp()
 
       justAttack(2)
       goDown()
@@ -666,7 +667,7 @@ export async function anotherGo() {
       left(3)
       left(3, false)
       right(1, false)
-      goUp({ type: 'jump' })
+      jUp()
 
       right(3, false)
       goDown()
@@ -674,7 +675,7 @@ export async function anotherGo() {
       right(3)
       hop()
       right(2)
-      goUp({ type: 'jump' })
+      jUp()
 
       left(4)
       jumpFar()

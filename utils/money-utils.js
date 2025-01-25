@@ -1,19 +1,11 @@
 // TODO(flyc): 「正在搜尋中」 和 「正在領取中」目前還沒有測試完成
 
 import { clickMouse, clickRightMouse } from './mouse-control.js'
-import {
-  _keyIn,
-  _moveMouseByOffset,
-  delay,
-  getApplicationInfo,
-  getTextByOffset,
-  marketAndExtract,
-  waitUntil,
-} from './others.js'
+import { keyIn, moveMouseByOffset, delay, getApplicationInfo, getTextByOffset } from './others.js'
 import rb from 'robotjs'
-function pressEnter() {
-  rb.keyTap('enter')
-}
+import { waitUntil } from './waitUntil.js'
+
+const pressEnter = () => rb.keyTap('enter')
 
 // 1366 * 768
 // 城鎮
@@ -40,287 +32,38 @@ const completeOffset = { x: 920, y: 120 }
 const recievedButtonOffset = { x: 970, y: 170 }
 const 頁碼左上_offset = { x: 619, y: 156 }
 const 頁碼右下_offset = { x: 668, y: 176 }
+
 // 分解欄位的按鈕的座標
 const extractOpenOffset = { x: 485, y: 489 }
 const confirmOffset = { x: 809, y: 510 }
 
-const MARKET_MATCH_MAX_STATYS = 'match-max-status'
-const MARKET_NO_MORE_STATUS = 'no-more-status'
-
-// 進入城鎮
-// 讓右上角的小地圖包含地圖名稱一起顯示
-// 把包包移動到切齊地圖名稱下緣、剛好遮住小地圖
-// 然後把 extract function 的座標設定為第一個想要分解的物品  let row = paramRow // 第一個要被分解的物品的座標
-export async function extract({ paramRow = 6, paramColumn = 5 } = {}) {
-  const { x, y } = getApplicationInfo()
-  const confirmColor = {
-    ax: x + confirmOffset.x,
-    ay: y + confirmOffset.y,
-    color: 'ddfffff',
-  }
-
-  // 等待畫面中 place: town 的地方的文字變成 梅斯特 的意思
-  const townName = await waitUntil({ x, y, maxWait: 60 * 1000, message: '梅斯特', place: 'town' })
-  if (townName == null) return void console.log('這裡是哪裡，我要去鎮上')
-
-  // 開啟物品欄 -> 點選裝備
-  rb.keyTap('i')
-
-  await delay()
-
-  _moveMouseByOffset(x, y, 裝備_offset, { randomX: 2, randomY: 2 })
-
-  await delay()
-
-  clickMouse()
-
-  await delay()
-
-  _moveMouseByOffset(x, y, 背包整理_offest, { randomX: 2, randomY: 2 })
-  clickMouse()
-
-  await delay()
-
-  _moveMouseByOffset(x, y, 背包向上_offest, { randomX: 2, randomY: 2 })
-  clickMouse()
-
-  await delay()
-
-  // 設定好第一個座標
-  let row = paramRow
-  let column = paramColumn // 第一個要被分解的物品的座標
-  const eachBlockSize = 42
-  const firstCoordinate = { x: 30, y: 155 }
-
-  // 開啟分解框
-  _moveMouseByOffset(x, y, extractOpenOffset, { randomX: 2, randomY: 2 })
-  await delay()
-  clickMouse()
-  await delay()
-
-  let offset = null
-  let everHas = false // 用於檢查如果已經檢查過有東西在上面了，就不去做再次檢查
-  for (let index = 1; index <= Infinity; index++) {
-    offset = _getOffsetByCoordinate(row, column)
-    _moveMouseByOffset(x, y, offset, { randomX: 3, randomY: 3 })
-    await delay(50)
-    clickRightMouse()
-    await delay(50)
-
-    // 檢查是不是不能分解的東西、會跳出一個框的那種，會自動把他按掉
-    _checkHasExtraHint()
-
-    if (index % 5 === 0 && !everHas) {
-      // 檢查是不是做了點擊的動作之後，仍舊符合關閉的條件
-      // 也是要先移動去空白的地方，不然會被情詳遮到
-      _moveMouseByOffset(x, y, { x: confirmOffset.x + 50, y: confirmOffset.y + 50 }, { randomX: 5, randomY: 2 })
-      await delay()
-      if (rb.getPixelColor(confirmColor.ax - 5, confirmColor.ay - 5) !== 'ffffff') {
-        console.log('已經沒了!')
-        break
-      } else {
-        everHas = true
-      }
-    }
-
-    const { row: nRow, column: nColumn } = _toNextRowColumn(row, column)
-    row = nRow
-    column = nColumn
-    offset = _getOffsetByCoordinate(row, column)
-
-    const maxNumberOfExtractOnce = 30
-    if (index % maxNumberOfExtractOnce === 0) {
-      // 先移到空白的地方, 避免那些道具詳情影響畫面
-      _moveMouseByOffset(x, y, { x: confirmOffset.x + 50, y: confirmOffset.y + 50 }, { randomX: 5, randomY: 2 })
-      await delay()
-
-      _moveMouseByOffset(x, y, confirmOffset, { randomX: 5, randomY: 2 })
-      await delay()
-
-      // 檢查顏色
-      const currentColor = rb.getPixelColor(confirmColor.ax - 5, confirmColor.ay - 5)
-      if (currentColor !== 'ffffff') {
-        console.log('已經沒了!')
-        break
-      }
-
-      clickMouse()
-      await delay()
-      pressEnter()
-      await delay()
-
-      await waitUntil({
-        x,
-        y,
-        message: '完成', // 這邊真的有點不準確..
-        maxWait: 10 * 1000,
-        interval: 200,
-        place: 'extract',
-      })
-
-      pressEnter()
-      await delay()
-
-      // 為了把東西全部往上放，所以要先把框關掉
-      await delay()
-      _keyIn(['escape'])
-      await delay()
-
-      // 把東西全部往上放
-      _moveMouseByOffset(x, y, 背包整理_offest, { randomX: 2, randomY: 2 })
-      await delay()
-      clickMouse()
-      await delay()
-      _moveMouseByOffset(x, y, 背包向上_offest, { randomX: 2, randomY: 2 })
-      await delay()
-      clickMouse()
-      await delay()
-
-      // 因為物品往上了，所以座標也要重新開始
-      row = paramRow
-      column = paramColumn
-
-      // 再重新把分解框叫出來
-      _moveMouseByOffset(x, y, extractOpenOffset, { randomX: 2, randomY: 2 })
-      await delay()
-      clickMouse()
-      await delay()
-
-      everHas = false
-    }
-  }
-
-  // 關閉分解和裝備視窗
-  _keyIn(Array(2).fill('escape'))
-
-  function _toNextRowColumn(row, coloumn) {
-    let returnRow = row
-    let returnColumn = coloumn
-
-    returnColumn = coloumn % 4 === 0 ? returnColumn - 3 : returnColumn + 1
-
-    if (column % 4 === 0) {
-      returnRow++
-    }
-    if (returnRow % 9 === 0) {
-      returnRow = 1
-      returnColumn += 4
-    }
-
-    return {
-      row: returnRow,
-      column: returnColumn,
-    }
-  }
-
-  function _getOffsetByCoordinate(row, column) {
-    const offset = {
-      x: firstCoordinate.x + (column - 1) * eachBlockSize,
-      y: firstCoordinate.y + (row - 1) * eachBlockSize,
-    }
-    return offset
-  }
-
-  function _checkHasExtraHint() {
-    const hintOkPoint = { x: x + 791, y: y + 444, color: '99dd00' }
-    const hintOkColor = rb.getPixelColor(hintOkPoint.x, hintOkPoint.y)
-    const hasMessage = hintOkColor === hintOkPoint.color
-    if (hasMessage) pressEnter()
-  }
+// 收回道具的結果的狀態 mapping 表
+const RECIEVE_ITEMS_STATUS_MAP = {
+  SUCCESS: 'SUCCESS',
+  NEED_CONTINUE: 'NEED_CONTINUE',
 }
-
-export async function market() {
-  const { x, y } = getApplicationInfo()
-
-  // 為了可以正常輸入數字，所以要先把使用者的輸入法切換到英文
-  if (!(await englishMarket(x, y))) return void console.log('記得切換到英文喔')
-  pressEnter()
-  delay(50)
-
-  // 滑鼠移動到搜尋框
-  await goToSearch(x, y)
-
-  // 透過搜尋不存在的商品來清空畫面，避免買到不需要的東西
-  await clearMarket(x, y)
-
-  let res = null
-  let status = null
-  let boughtNumber = 0
-
-  res = await 買防具({ x, y, boughtNumber, price: 100000, level: 130, message: '開始買 130 防具' })
-  boughtNumber = res.boughtNumber
-  status = res.status
-  if (status === '購買空間不夠了') {
-    await recieveItems(x, y)
-    return { status: MARKET_MATCH_MAX_STATYS }
-  }
-  console.log('因為怕沒買到東西導致太快結束，所以要先等個 2 秒')
-  console.log('')
-  await delay(2000)
-
-  res = await 買武器({ x, y, boughtNumber, price: 100000, level: 130, message: '開始買 130 武器' })
-  boughtNumber = res.boughtNumber
-  status = res.status
-  if (status === '購買空間不夠了') {
-    await recieveItems(x, y)
-    return { status: MARKET_MATCH_MAX_STATYS }
-  }
-  console.log('因為怕沒買到東西導致太快結束，所以要先等個 2 秒')
-  console.log('')
-  await delay(2000)
-
-  res = await 買防具({ x, y, boughtNumber, price: 70000, message: '開始買 108 防具' })
-  boughtNumber = res.boughtNumber
-  status = res.status
-  if (status === '購買空間不夠了') {
-    await recieveItems(x, y)
-    return { status: MARKET_MATCH_MAX_STATYS }
-  }
-  console.log('因為怕沒買到東西導致太快結束，所以要先等個 2 秒')
-  console.log('')
-  await delay(2000)
-
-  res = await 買武器({ x, y, boughtNumber, price: 70000, message: '開始買 108 武器' })
-  boughtNumber = res.boughtNumber
-  status = res.status
-  if (status === '購買空間不夠了') {
-    await recieveItems(x, y)
-    return { status: MARKET_MATCH_MAX_STATYS }
-  }
-  console.log('因為怕沒買到東西導致太快結束，所以要先等個 2 秒')
-  console.log('')
-  await delay(2000)
-
-  pressEnter()
-
-  const recieveStatus = await recieveItems(x, y, boughtNumber)
-  if (recieveStatus !== RECIEVE_ITEMS_STATUS_MAP.SUCCESS) {
-    console.log('可能是包包滿了或其他原因造成的停止，要繼續買!')
-    return { status: recieveStatus }
-  }
-
-  console.log(`\x1b[1m\x1b[32m${'市場結束囉!'} \x1b[0m`)
-
-  return { status: MARKET_NO_MORE_STATUS }
+const MARKET_STATUS_MAP = {
+  MARKET_MATCH_MAX_STATYS: 'MARKET_MATCH_MAX_STATYS',
+  MARKET_NO_MORE_STATUS: 'MARKET_NO_MORE_STATUS',
 }
 
 // 得要是英文輸入才可以
 async function englishMarket(x, y) {
-  _moveMouseByOffset(x, y, 市場搜尋_offset, { randomX: 2, randomY: 1 })
+  moveMouseByOffset(x, y, 市場搜尋_offset, { randomX: 2, randomY: 1 })
   await delay()
   clickMouse()
   await delay()
-  _keyIn('123')
+  keyIn('123')
 
   let is123 = await waitUntil({ x, y, message: '123', maxWait: 1500, place: 'market-search' })
   if (is123 == null) {
-    _keyIn(Array(5).fill('backspace'))
+    keyIn(Array(5).fill('backspace'))
     await delay()
 
     rb.keyTap('shift')
     await delay()
 
-    _keyIn('123')
+    keyIn('123')
     is123 = await waitUntil({ x, y, message: '123', place: 'market-search' })
 
     if (is123 == null) return false
@@ -331,9 +74,9 @@ async function englishMarket(x, y) {
   return true
 }
 
-export async function goToSearch(x, y) {
+async function goToSearch(x, y) {
   for (let i = 0; i < 2; i++) {
-    _moveMouseByOffset(x, y, 查詢_offset)
+    moveMouseByOffset(x, y, 查詢_offset)
     await delay(50)
     clickMouse()
     await delay(50)
@@ -360,7 +103,6 @@ async function 買防具({ x, y, boughtNumber, price, level, message = '開始�
   async function nonoFn(x, y, { offset1, offset2, page = '', forIndex = '' } = {}) {
     const nono = ['水晶', '未誰'].map((key) => new RegExp(key))
     const text = await getTextByOffset(x, y, offset1, offset2, 'chi_tra')
-    console.log(`${page}: [${forIndex + 1}]: ${text}`)
 
     return text === '' || nono.some((item) => text.match(new RegExp(item)))
   }
@@ -410,31 +152,31 @@ async function 買武器({ x, y, boughtNumber, price, level, message = '開始�
 async function setPriceAndLevel(x, y, config) {
   const { 標題_offset, 重置_offset, 等級_offset, 價格_offset, 搜尋_offset, price, level } = config
 
-  _moveMouseByOffset(x, y, 標題_offset)
+  moveMouseByOffset(x, y, 標題_offset)
   await delay(50)
   clickMouse()
   await delay(50)
 
-  _moveMouseByOffset(x, y, 重置_offset, { randomX: 2, randomY: 2 })
+  moveMouseByOffset(x, y, 重置_offset, { randomX: 2, randomY: 2 })
   await delay(50)
   clickMouse()
   await delay(50)
 
-  _moveMouseByOffset(x, y, 價格_offset, { randomX: 2, randomY: 2 })
+  moveMouseByOffset(x, y, 價格_offset, { randomX: 2, randomY: 2 })
   await delay(50)
   clickMouse()
   await delay(50)
-  _keyIn(String(price))
+  keyIn(String(price))
   await delay(50)
 
-  _moveMouseByOffset(x, y, 等級_offset, { randomX: 2, randomY: 2 })
+  moveMouseByOffset(x, y, 等級_offset, { randomX: 2, randomY: 2 })
   await delay(50)
   clickMouse()
   await delay(50)
-  _keyIn(String(level))
+  keyIn(String(level))
   await delay(50)
 
-  _moveMouseByOffset(x, y, 搜尋_offset, { randomX: 2, randomY: 2 })
+  moveMouseByOffset(x, y, 搜尋_offset, { randomX: 2, randomY: 2 })
   await delay(50)
   clickMouse()
   await delay(50)
@@ -474,6 +216,7 @@ async function buyByOffset(config) {
   if (has正在搜尋中 != null) {
     console.log('有出現「正在搜尋中」，等他消失')
     await waitUntil({ x, y, message: '正在', maxWait: 60 * 1000, place: ['center'], waitDissapear: true })
+    console.log('> 「正在搜尋中」已消失')
   } else {
     console.log('沒有出現「正在搜尋中」')
   }
@@ -507,10 +250,10 @@ async function buyByOffset(config) {
   return { boughtNumber, status }
 }
 
-export async function getCurrentPage(x, y) {
+async function getCurrentPage(x, y) {
   return getTextByOffset(x, y, 頁碼左上_offset, 頁碼右下_offset)
 }
-export async function checkPage(x, y) {
+async function checkPage(x, y) {
   const pageText = await getCurrentPage(x, y)
 
   if (!/\d+\/?\d+/.test(pageText)) return null
@@ -519,10 +262,6 @@ export async function checkPage(x, y) {
   return true
 }
 
-const RECIEVE_ITEMS_STATUS_MAP = {
-  SUCCESS: 'SUCCESS',
-  NEED_CONTINUE: 'NEED_CONTINUE',
-}
 async function recieveItems(x, y, totalBuy) {
   if (totalBuy === 0) {
     console.log('沒有買東西，所以不用領取')
@@ -534,13 +273,13 @@ async function recieveItems(x, y, totalBuy) {
   // await delay()
 
   // move to complete button
-  _moveMouseByOffset(x, y, completeOffset)
+  moveMouseByOffset(x, y, completeOffset)
   await delay()
   clickMouse()
   await delay()
 
   // move to accept all recieved items
-  _moveMouseByOffset(x, y, recievedButtonOffset)
+  moveMouseByOffset(x, y, recievedButtonOffset)
   await delay()
   clickMouse()
   await delay()
@@ -615,14 +354,14 @@ async function recieveItems(x, y, totalBuy) {
   }
 }
 
-export async function buy(x, y, offset = firstItemOffset) {
-  _moveMouseByOffset(x, y, offset)
+async function buy(x, y, offset = firstItemOffset) {
+  moveMouseByOffset(x, y, offset)
   await delay()
   clickMouse()
   await delay()
 
   // click buy button
-  _moveMouseByOffset(x, y, buyButtonOffset)
+  moveMouseByOffset(x, y, buyButtonOffset)
   await delay()
   clickMouse()
   await delay()
@@ -655,7 +394,7 @@ export async function buy(x, y, offset = firstItemOffset) {
  * nonoFn: 回傳 true 的時候，不要買, 反之要買
  * justNextPage: 回傳 true 的時候，直接跳下一夜
  * */
-export async function buyWithNoNo(
+async function buyWithNoNo(
   x,
   y,
   { nonoFn = () => Promise.resolve(false), justNextPage = () => Promise.resolve(false), totalBuy = 0 }
@@ -731,7 +470,7 @@ export async function buyWithNoNo(
   return { totalBuy, status: '當前類別沒有東西了' }
 
   async function goNextPage(x, y, { justMove = false } = {}) {
-    _moveMouseByOffset(x, y, { x: 687, y: 171 }, { randomX: 1, randomY: 1 })
+    moveMouseByOffset(x, y, { x: 687, y: 171 }, { randomX: 1, randomY: 1 })
     await delay()
 
     if (justMove) return
@@ -741,7 +480,302 @@ export async function buyWithNoNo(
   }
 }
 
+const 離開市場_offset = { x: 977, y: 56 }
+
+async function marketAndExtract({ startWith } = {}) {
+  const { x, y } = getApplicationInfo()
+
+  if (startWith === 'town') {
+    const townName = await waitUntil({ x, y, maxWait: 10 * 1000, message: '梅斯特', place: 'town' })
+    if (townName == null) return void console.log('要先到鎮上喔')
+
+    keyIn([']', ...Array(4).fill('down')])
+    rb.keyTap('enter')
+  } else if (startWith === 'market') {
+    console.log('直接從市場開始')
+  }
+
+  const inMarket = await waitUntil({
+    x,
+    y,
+    maxWait: 10 * 1000,
+    message: '完全一致',
+    place: 'market-title',
+  })
+  if (inMarket == null) return void console.log('到不了市場。。。')
+
+  const marketResult = await market()
+
+  moveMouseByOffset(x, y, 離開市場_offset)
+  await delay()
+  clickMouse()
+  await delay()
+
+  // 回到了城鎮，開始分解
+  await extract()
+
+  console.log('結束囉!')
+  return marketResult // for recursive stuff
+}
+
+// 進入城鎮
+// 讓右上角的小地圖包含地圖名稱一起顯示
+// 把包包移動到切齊地圖名稱下緣、剛好遮住小地圖
+// 然後把 extract function 的座標設定為第一個想要分解的物品  let row = paramRow // 第一個要被分解的物品的座標
+export async function extract({ paramRow = 6, paramColumn = 5 } = {}) {
+  const { x, y } = getApplicationInfo()
+  const confirmColor = {
+    ax: x + confirmOffset.x,
+    ay: y + confirmOffset.y,
+    color: 'ddfffff',
+  }
+
+  // 等待畫面中 place: town 的地方的文字變成 梅斯特 的意思
+  const townName = await waitUntil({ x, y, maxWait: 60 * 1000, message: '梅斯特', place: 'town' })
+  if (townName == null) return void console.log('這裡是哪裡，我要去鎮上')
+
+  // 開啟物品欄 -> 點選裝備
+  rb.keyTap('i')
+
+  await delay()
+
+  moveMouseByOffset(x, y, 裝備_offset, { randomX: 2, randomY: 2 })
+
+  await delay()
+
+  clickMouse()
+
+  await delay()
+
+  moveMouseByOffset(x, y, 背包整理_offest, { randomX: 2, randomY: 2 })
+  clickMouse()
+
+  await delay()
+
+  moveMouseByOffset(x, y, 背包向上_offest, { randomX: 2, randomY: 2 })
+  clickMouse()
+
+  await delay()
+
+  // 設定好第一個座標
+  let row = paramRow
+  let column = paramColumn // 第一個要被分解的物品的座標
+  const eachBlockSize = 42
+  const firstCoordinate = { x: 30, y: 155 }
+
+  // 開啟分解框
+  moveMouseByOffset(x, y, extractOpenOffset, { randomX: 2, randomY: 2 })
+  await delay()
+  clickMouse()
+  await delay()
+
+  let offset = null
+  let everHas = false // 用於檢查如果已經檢查過有東西在上面了，就不去做再次檢查
+  for (let index = 1; index <= Infinity; index++) {
+    offset = _getOffsetByCoordinate(row, column)
+    moveMouseByOffset(x, y, offset, { randomX: 3, randomY: 3 })
+    await delay(50)
+    clickRightMouse()
+    await delay(50)
+
+    // 檢查是不是不能分解的東西、會跳出一個框的那種，會自動把他按掉
+    _checkHasExtraHint()
+
+    if (index % 5 === 0 && !everHas) {
+      // 檢查是不是做了點擊的動作之後，仍舊符合關閉的條件
+      // 也是要先移動去空白的地方，不然會被情詳遮到
+      moveMouseByOffset(x, y, { x: confirmOffset.x + 50, y: confirmOffset.y + 50 }, { randomX: 5, randomY: 2 })
+      await delay()
+      if (rb.getPixelColor(confirmColor.ax - 5, confirmColor.ay - 5) !== 'ffffff') {
+        console.log('已經沒了!')
+        break
+      } else {
+        everHas = true
+      }
+    }
+
+    const { row: nRow, column: nColumn } = _toNextRowColumn(row, column)
+    row = nRow
+    column = nColumn
+    offset = _getOffsetByCoordinate(row, column)
+
+    const maxNumberOfExtractOnce = 30
+    if (index % maxNumberOfExtractOnce === 0) {
+      // 先移到空白的地方, 避免那些道具詳情影響畫面
+      moveMouseByOffset(x, y, { x: confirmOffset.x + 50, y: confirmOffset.y + 50 }, { randomX: 5, randomY: 2 })
+      await delay()
+
+      moveMouseByOffset(x, y, confirmOffset, { randomX: 5, randomY: 2 })
+      await delay()
+
+      // 檢查顏色
+      const currentColor = rb.getPixelColor(confirmColor.ax - 5, confirmColor.ay - 5)
+      if (currentColor !== 'ffffff') {
+        console.log('已經沒了!')
+        break
+      }
+
+      clickMouse()
+      await delay()
+      pressEnter()
+      await delay()
+
+      await waitUntil({
+        x,
+        y,
+        message: '完成', // 這邊真的有點不準確..
+        maxWait: 10 * 1000,
+        interval: 200,
+        place: 'extract',
+      })
+
+      pressEnter()
+      await delay()
+
+      // 為了把東西全部往上放，所以要先把框關掉
+      await delay()
+      keyIn(['escape'])
+      await delay()
+
+      // 把東西全部往上放
+      moveMouseByOffset(x, y, 背包整理_offest, { randomX: 2, randomY: 2 })
+      await delay()
+      clickMouse()
+      await delay()
+      moveMouseByOffset(x, y, 背包向上_offest, { randomX: 2, randomY: 2 })
+      await delay()
+      clickMouse()
+      await delay()
+
+      // 因為物品往上了，所以座標也要重新開始
+      row = paramRow
+      column = paramColumn
+
+      // 再重新把分解框叫出來
+      moveMouseByOffset(x, y, extractOpenOffset, { randomX: 2, randomY: 2 })
+      await delay()
+      clickMouse()
+      await delay()
+
+      everHas = false
+    }
+  }
+
+  // 關閉分解和裝備視窗
+  keyIn(Array(2).fill('escape'))
+
+  function _toNextRowColumn(row, coloumn) {
+    let returnRow = row
+    let returnColumn = coloumn
+
+    returnColumn = coloumn % 4 === 0 ? returnColumn - 3 : returnColumn + 1
+
+    if (column % 4 === 0) {
+      returnRow++
+    }
+    if (returnRow % 9 === 0) {
+      returnRow = 1
+      returnColumn += 4
+    }
+
+    return {
+      row: returnRow,
+      column: returnColumn,
+    }
+  }
+
+  function _getOffsetByCoordinate(row, column) {
+    const offset = {
+      x: firstCoordinate.x + (column - 1) * eachBlockSize,
+      y: firstCoordinate.y + (row - 1) * eachBlockSize,
+    }
+    return offset
+  }
+
+  function _checkHasExtraHint() {
+    const hintOkPoint = { x: x + 791, y: y + 444, color: '99dd00' }
+    const hintOkColor = rb.getPixelColor(hintOkPoint.x, hintOkPoint.y)
+    const hasMessage = hintOkColor === hintOkPoint.color
+    if (hasMessage) pressEnter()
+  }
+}
+
+export async function market() {
+  const { x, y } = getApplicationInfo()
+
+  // 為了可以正常輸入數字，所以要先把使用者的輸入法切換到英文
+  if (!(await englishMarket(x, y))) return void console.log('記得切換到英文喔')
+  pressEnter()
+  delay(50)
+
+  // 滑鼠移動到搜尋框
+  await goToSearch(x, y)
+
+  // 透過搜尋不存在的商品來清空畫面，避免買到不需要的東西
+  await clearMarket(x, y)
+
+  let res = null
+  let status = null
+  let boughtNumber = 0
+
+  res = await 買防具({ x, y, boughtNumber, price: 100000, level: 130, message: '開始買 130 防具' })
+  boughtNumber = res.boughtNumber
+  status = res.status
+  if (status === '購買空間不夠了') {
+    await recieveItems(x, y)
+    return { status: MARKET_STATUS_MAP.MARKET_MATCH_MAX_STATYS }
+  }
+  console.log('因為怕沒買到東西導致太快結束，所以要先等個 2 秒')
+  console.log('')
+  await delay(2000)
+
+  res = await 買武器({ x, y, boughtNumber, price: 100000, level: 130, message: '開始買 130 武器' })
+  boughtNumber = res.boughtNumber
+  status = res.status
+  if (status === '購買空間不夠了') {
+    await recieveItems(x, y)
+    return { status: MARKET_STATUS_MAP.MARKET_MATCH_MAX_STATYS }
+  }
+  console.log('因為怕沒買到東西導致太快結束，所以要先等個 2 秒')
+  console.log('')
+  await delay(2000)
+
+  res = await 買防具({ x, y, boughtNumber, price: 70000, message: '開始買 108 防具' })
+  boughtNumber = res.boughtNumber
+  status = res.status
+  if (status === '購買空間不夠了') {
+    await recieveItems(x, y)
+    return { status: MARKET_STATUS_MAP.MARKET_MATCH_MAX_STATYS }
+  }
+  console.log('因為怕沒買到東西導致太快結束，所以要先等個 2 秒')
+  console.log('')
+  await delay(2000)
+
+  res = await 買武器({ x, y, boughtNumber, price: 70000, message: '開始買 108 武器' })
+  boughtNumber = res.boughtNumber
+  status = res.status
+  if (status === '購買空間不夠了') {
+    await recieveItems(x, y)
+    return { status: MARKET_STATUS_MAP.MARKET_MATCH_MAX_STATYS }
+  }
+  console.log('因為怕沒買到東西導致太快結束，所以要先等個 2 秒')
+  console.log('')
+  await delay(2000)
+
+  pressEnter()
+
+  const recieveStatus = await recieveItems(x, y, boughtNumber)
+  if (recieveStatus !== RECIEVE_ITEMS_STATUS_MAP.SUCCESS) {
+    console.log('可能是包包滿了或其他原因造成的停止，要繼續買!')
+    return { status: recieveStatus }
+  }
+
+  console.log(`\x1b[1m\x1b[32m${'市場結束囉!'} \x1b[0m`)
+
+  return { status: MARKET_STATUS_MAP.MARKET_NO_MORE_STATUS }
+}
+
 export async function money({ startWith = 'town' } = {}) {
   const { status } = await marketAndExtract({ startWith })
-  if (status !== MARKET_NO_MORE_STATUS) await money({ startWith })
+  if (status !== MARKET_STATUS_MAP.MARKET_NO_MORE_STATUS) await money({ startWith })
 }

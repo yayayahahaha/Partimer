@@ -1,6 +1,6 @@
 import { beforeStart, displayMousePosition } from './utils/others.js'
 import { extract, market, money } from './utils/money-utils.js'
-import { anotherGo, movie, redRobot } from './utils/thunder.js'
+import { battleField, movie, redRobot } from './utils/thunder.js'
 import select from '@inquirer/select'
 
 async function start() {
@@ -46,7 +46,7 @@ async function start() {
   await beforeStart(3)
   switch (selectAnswer) {
     case '賽爾尼溫':
-      anotherGo()
+      battleField()
       break
 
     case '阿爾克斯':
