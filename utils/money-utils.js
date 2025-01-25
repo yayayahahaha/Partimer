@@ -235,9 +235,10 @@ export async function market() {
   pressEnter()
   delay(50)
 
+  // 滑鼠移動到搜尋框
   await goToSearch(x, y)
 
-  // 清空畫面，不然會買到其他東西。。。
+  // 透過搜尋不存在的商品來清空畫面，避免買到不需要的東西
   await clearMarket(x, y)
 
   let res = null
@@ -290,7 +291,11 @@ export async function market() {
 
   pressEnter()
 
-  await recieveItems(x, y, boughtNumber)
+  const recieveStatus = await recieveItems(x, y, boughtNumber)
+  if (recieveStatus !== RECIEVE_ITEMS_STATUS_MAP.SUCCESS) {
+    console.log('可能是包包滿了或其他原因造成的停止，要繼續買!')
+    return { status: recieveStatus }
+  }
 
   console.log(`\x1b[1m\x1b[32m${'市場結束囉!'} \x1b[0m`)
 
@@ -490,6 +495,7 @@ async function buyByOffset(config) {
     return { boughtNumber: preBoughtNumber, status: '當前類別沒有東西了' }
   }
 
+  // 在特定條件下購買東西
   const { totalBuy: boughtNumber, status } = await buyWithNoNo(x, y, {
     nonoFn,
     justNextPage,
@@ -511,14 +517,19 @@ export async function checkPage(x, y) {
   return true
 }
 
+const RECIEVE_ITEMS_STATUS_MAP = {
+  SUCCESS: 'SUCCESS',
+  NEED_CONTINUE: 'NEED_CONTINUE',
+}
 async function recieveItems(x, y, totalBuy) {
   if (totalBuy === 0) {
     console.log('沒有買東西，所以不用領取')
-    return
+    return { recieveStatus: RECIEVE_ITEMS_STATUS_MAP.SUCCESS }
   }
 
-  pressEnter()
-  await delay()
+  // TODO(flyc): 這個動作是? 先註解起來吧
+  // pressEnter()
+  // await delay()
 
   // move to complete button
   _moveMouseByOffset(x, y, completeOffset)
@@ -560,11 +571,13 @@ async function recieveItems(x, y, totalBuy) {
       console.log('已經領取完成!')
       pressEnter()
       await delay()
-      return
+
+      // 判斷是什麼原因完成的
+      return _checkRecieveStatus(has已經結束)
     }
+
     console.log(`\x1b[1m\x1b[31m${'畫面沒有出現領取中，也沒有完成，卡住了! 直接重新嘗試看看'} \x1b[0m`)
-    await recieveItems(x, y, totalBuy)
-    return
+    return await recieveItems(x, y, totalBuy)
   }
 
   console.log('目前正在領取中, 等待領取中的字樣消失')
@@ -587,12 +600,17 @@ async function recieveItems(x, y, totalBuy) {
   })
   if (has已經結束 == null) {
     console.log(`\x1b[1m\x1b[31m${'沒有領取中的字樣, 但也沒有完成的字樣，判斷是自己中斷了，重新開始一次！'} \x1b[0m`)
-    await recieveItems(x, y, totalBuy)
-    return
+    return await recieveItems(x, y, totalBuy)
   }
 
   pressEnter()
   await delay()
+
+  return _checkRecieveStatus(has已經結束)
+
+  function _checkRecieveStatus(has已經結束) {
+    return has已經結束.foundIndex === 0 ? RECIEVE_ITEMS_STATUS_MAP.SUCCESS : RECIEVE_ITEMS_STATUS_MAP.NEED_CONTINUE
+  }
 }
 
 export async function buy(x, y, offset = firstItemOffset) {
@@ -630,10 +648,15 @@ export async function buy(x, y, offset = firstItemOffset) {
         : { status: '成功' }
 }
 
+/**
+ * @description
+ * nonoFn: 回傳 true 的時候，不要買, 反之要買
+ * justNextPage: 回傳 true 的時候，直接跳下一夜
+ * */
 export async function buyWithNoNo(
   x,
   y,
-  { nonoFn = Function.prototype, justNextPage = () => Promise.resolve(), totalBuy = 0 }
+  { nonoFn = () => Promise.resolve(false), justNextPage = () => Promise.resolve(false), totalBuy = 0 }
 ) {
   await goNextPage(x, y, { justMove: true })
 
@@ -716,7 +739,7 @@ export async function buyWithNoNo(
   }
 }
 
-export async function money() {
-  const { status } = await marketAndExtract()
-  if (status !== MARKET_NO_MORE_STATUS) await money()
+export async function money({ startWith = 'town' } = {}) {
+  const { status } = await marketAndExtract({ startWith })
+  if (status !== MARKET_NO_MORE_STATUS) await money({ startWith })
 }
