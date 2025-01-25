@@ -350,7 +350,7 @@ async function recieveItems(x, y, totalBuy) {
   return _checkRecieveStatus(has已經結束)
 
   function _checkRecieveStatus(has已經結束) {
-    return has已經結束.foundIndex === 0 ? RECIEVE_ITEMS_STATUS_MAP.SUCCESS : RECIEVE_ITEMS_STATUS_MAP.NEED_CONTINUE
+    return has已經結束.index === 0 ? RECIEVE_ITEMS_STATUS_MAP.SUCCESS : RECIEVE_ITEMS_STATUS_MAP.NEED_CONTINUE
   }
 }
 

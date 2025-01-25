@@ -1,5 +1,6 @@
 // TODO(flyc)
 // 每一個行為結束後，角色應該要在的位置是否正確 (from min-map)
+// 如果畫面不是當前正在執行的地圖了，就要停掉的機制 (要用非同步 + flag才不會打斷)
 
 import rb from 'robotjs'
 
