@@ -1,3 +1,6 @@
+// TODO(flyc)
+// 每一個行為結束後，角色應該要在的位置是否正確 (from min-map)
+
 import rb from 'robotjs'
 
 const buffBetweenEach = {
@@ -10,70 +13,60 @@ function generateBuffList() {
   return [
     {
       code: '2',
-      vkCode: 'VK_2',
       coldTime: 120 * 1000,
       priority: false,
       previousTimestamp,
     },
     {
       code: '3',
-      vkCode: 'VK_3',
       coldTime: 120 * 1000,
       priority: true,
       previousTimestamp,
     },
     {
       code: '4',
-      vkCode: 'VK_4',
       coldTime: 240 * 1000,
       priority: false,
       previousTimestamp,
     },
     {
       code: 'home',
-      vkCode: 'VK_HOME',
       coldTime: 180 * 1000,
       priority: false,
       previousTimestamp,
     },
     {
       code: 'end',
-      vkCode: 'VK_END',
       coldTime: 120 * 1000,
       priority: false,
       previousTimestamp,
     },
     {
       code: 'pagedown',
-      vkCode: 'VK_NEXT',
       coldTime: 60 * 1000,
       priority: false,
       previousTimestamp,
     },
     {
       code: 'delete',
-      vkCode: 'VK_DELETE',
       coldTime: 45 * 1000,
       priority: false,
       previousTimestamp,
     },
     {
       code: '5',
-      vkCode: 'VK_5',
       coldTime: 63 * 1000,
       priority: false,
       previousTimestamp,
     },
     {
       code: 'n',
-      vkCode: 'VK_n',
       coldTime: 250 * 1000,
       priority: false,
       previousTimestamp,
     },
     {
       code: '6',
-      vkCode: 'VK_6',
       coldTime: 30 * 1000,
       priority: true,
       previousTimestamp,
@@ -124,21 +117,18 @@ function buffStuff(test = false) {
 const attackList = [
   {
     code: 'g',
-    vkCode: 'VK_G',
     coldTime: 8 * 1000,
     delayTime: 100,
     previousTimestamp: null,
   },
   {
     code: 'a',
-    vkCode: 'VK_A',
     coldTime: 13 * 1000,
     delayTime: 75,
     previousTimestamp: null,
   },
   {
     code: 'y',
-    vkCode: 'VK_Y',
     coldTime: 45 * 1000,
     delayTime: 75,
     previousTimestamp: null,
@@ -315,11 +305,6 @@ export function test() {
   hop()
 }
 
-// TODO 檢查顏色的部分
-// 1. 輪
-// 2. 其他玩家
-// 3. 自己本身的位子是不是跑到最下面了
-// 4. 不透過 ctrl + tab 就可以暫停的方式
 export async function battleField() {
   // TODO 在 robot 在跑的時候，這個 listenerStuff 就不會作用了
   // 可能要改成判斷螢幕上的東西來做停止? 像是地名之類的
