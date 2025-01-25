@@ -2,7 +2,6 @@
 
 // 1366 * 768
 import { getForegroundWindowRect, getForegroundWindowTitle } from './application-control.js'
-import { pressEnter } from './keyboard-action.js'
 import { clickMouse, moveMouseWithBezier, getCurrentCoordinate } from './mouse-control.js'
 import rb from 'robotjs'
 import { captureScreenAndConvertToJimp, recognizeText } from './text.js'
@@ -52,7 +51,7 @@ export async function marketAndExtract({ startWith } = {}) {
     if (townName == null) return void console.log('要先到鎮上喔')
 
     _keyIn([']', ...Array(4).fill('down')])
-    pressEnter()
+    rb.keyTap('enter')
   } else if (startWith === 'market') {
     console.log('直接從市場開始')
   }

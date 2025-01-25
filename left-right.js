@@ -1,8 +1,6 @@
 import rb from 'robotjs'
 import { beforeStart } from './utils/others.js'
 
-import { keyboardAction } from './utils/keyboard-control.js'
-
 let way = 0
 async function start() {
   await beforeStart(3)
@@ -14,8 +12,8 @@ async function start() {
     else rb.keyTap('right')
     for (let j = 0; j < 16; j++) {
       rb.keyTap(j % 2 ? 'f' : 'd')
-      await new Promise(r => setTimeout(r, 1000))  
-    } 
+      await new Promise((r) => setTimeout(r, 1000))
+    }
   }
 }
 

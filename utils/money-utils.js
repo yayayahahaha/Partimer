@@ -1,6 +1,5 @@
 // TODO(flyc): 「正在搜尋中」 和 「正在領取中」目前還沒有測試完成
 
-import { pressEnter } from './keyboard-action.js'
 import { clickMouse, clickRightMouse } from './mouse-control.js'
 import {
   _keyIn,
@@ -12,6 +11,9 @@ import {
   waitUntil,
 } from './others.js'
 import rb from 'robotjs'
+function pressEnter() {
+  rb.keyTap('enter')
+}
 
 // 1366 * 768
 // 城鎮
