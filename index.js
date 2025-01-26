@@ -1,6 +1,6 @@
 import { beforeStart, displayMousePosition } from './utils/others.js'
 import { extract, market, money } from './utils/money-utils.js'
-import { battleField, movie, redRobot } from './utils/thunder.js'
+import { battleField, movie, redRobot, spring } from './utils/thunder.js'
 import select from '@inquirer/select'
 
 async function start() {
@@ -8,16 +8,20 @@ async function start() {
     message: '想做什麼呢',
     choices: [
       {
-        name: '賽爾尼溫',
-        value: '賽爾尼溫',
-      },
-      {
         name: '阿爾克斯',
         value: '阿爾克斯',
       },
       {
         name: '奧迪溫',
         value: '奧迪溫',
+      },
+      {
+        name: '桃源境',
+        value: '桃源境',
+      },
+      {
+        name: '賽爾尼溫',
+        value: '賽爾尼溫',
       },
       {
         name: 'money',
@@ -45,16 +49,20 @@ async function start() {
 
   await beforeStart(3)
   switch (selectAnswer) {
-    case '賽爾尼溫':
-      battleField()
-      break
-
     case '阿爾克斯':
       movie()
       break
 
     case '奧迪溫':
       redRobot()
+      break
+
+    case '桃源境':
+      spring()
+      break
+
+    case '賽爾尼溫':
+      battleField()
       break
 
     case 'money':

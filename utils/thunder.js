@@ -816,6 +816,162 @@ export function redRobot() {
   }
 }
 
+export function spring() {
+  const downPart = halfChance() ? s3 : s4
+  const createList = () => [sp1, sp2, downPart, s5].sort(() => Math.random() - 0.5)
+
+  let fn = null
+  let fnList = createList()
+  for (let i = 0; i < 100; i++) {
+    fnList = fnList.length === 0 ? createList() : fnList
+
+    console.log('fnList:', fnList)
+    fn = fnList.splice(0, 1)[0]
+    fn()
+  }
+
+  function sp1() {
+    right(2, false)
+    hop()
+    justAttack(2)
+    goUp()
+    justAttack(2)
+    left(4)
+    goDown()
+    justAttack(2)
+    right(4)
+    goDown()
+    justAttack(2)
+    left(3)
+    hop()
+    justAttack(2)
+  }
+
+  function sp2() {
+    right(2, false)
+    hop()
+    justAttack(2)
+    goUp()
+    justAttack(2)
+    left(4)
+    goDown()
+    justAttack(2)
+    right(4)
+
+    hop()
+    justAttack(2)
+    hop()
+    justAttack(2)
+    jUp()
+    justAttack(2)
+    hop()
+    justAttack(1)
+    right(3)
+    left(4, false)
+    goDown()
+    justAttack(1)
+    right(3)
+    goDown()
+    justAttack(1)
+    left(2, false)
+    hop()
+    justAttack(2)
+    goUp()
+    justAttack(2)
+    goDown()
+    justAttack(2)
+    hop()
+    justAttack(2)
+    goDown()
+    justAttack(2)
+    hop()
+    justAttack(2)
+  }
+
+  function s3() {
+    right(2, false)
+    goDown()
+    justAttack(9)
+    left(2, false)
+    goUp()
+    justAttack(3)
+    hop()
+    justAttack(2)
+    hop()
+    justAttack(2)
+    jUp()
+    justAttack(2)
+    hop()
+    justAttack(2)
+    right(2)
+    goDown()
+    right(3)
+    goDown()
+    left(2, false)
+    hop()
+    justAttack(2)
+  }
+
+  function s4() {
+    right(2, false)
+    goDown()
+    justAttack(3)
+    right(6)
+    left(2, false)
+    goUp()
+    justAttack(2)
+    goDown()
+    justAttack(3)
+    goUp()
+    justAttack(1)
+    hop()
+    justAttack(2)
+    hop()
+    justAttack(1)
+    right(2, false)
+    goDown()
+    justAttack(1)
+    left(3)
+    right(4, false)
+    goDown()
+    justAttack(1)
+    left(3, false)
+    hop()
+    justAttack(2)
+  }
+
+  function s5() {
+    right(2, false)
+    hop()
+    justAttack(2)
+    goUp()
+    justAttack(2)
+    hop()
+    justAttack(1)
+    hop()
+    justAttack(3)
+    left(1, false)
+    goDown()
+    justAttack(2)
+    right(3)
+    left(4)
+    hop()
+    justAttack()
+    hop()
+    justAttack()
+    jUp()
+    justAttack(2)
+    goDown()
+    justAttack(3)
+    right(4)
+    goDown()
+    justAttack()
+    left(2, false)
+    hop()
+    justAttack(2)
+  }
+}
+
 // TODO(flyc): 要看看有沒有不需要 promise 的 sleep 功能
 function sleepWithRb(msec = 200) {
   rb.setKeyboardDelay(msec)
