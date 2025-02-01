@@ -777,5 +777,5 @@ export async function market() {
 
 export async function money({ startWith = 'town' } = {}) {
   const { status } = await marketAndExtract({ startWith })
-  if (status !== MARKET_STATUS_MAP.MARKET_NO_MORE_STATUS) await money({ startWith })
+  if (status !== MARKET_STATUS_MAP.MARKET_NO_MORE_STATUS) await money()
 }

@@ -867,7 +867,7 @@ export function spring() {
     hop()
     justAttack(1)
     right(3)
-    left(4, false)
+    left(2, false)
     goDown()
     justAttack(1)
     right(3)
