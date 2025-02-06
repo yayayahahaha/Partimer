@@ -735,12 +735,12 @@ function pickOne(list = []) {
 }
 
 export function redRobot() {
-  const createMovieList = () => [redGroup1, redGroup1, redGroup2, redGroup2, goAndBack].sort(() => Math.random() - 0.5)
+  const createMovieList = () => [redGroup1, redGroup2, goAndBack].sort(() => Math.random() - 0.5)
 
   let fn = null
   let fnList = createMovieList()
   for (let i = 0; i < 100; i++) {
-    fnList = fnList.length === 0 ? createMovieList() : fnList
+    fnList = fnList.length === 0 ? [...createMovieList(), halfChance() ? redGroup3 : Function.prototype] : fnList
 
     console.log('fnList:', fnList)
     fn = fnList.splice(0, 1)[0]
@@ -1103,6 +1103,34 @@ export function redRobot() {
     const picked = pickOne([redBot1, redBot2, redBot3, redRobot4])
     console.log(picked)
     picked()
+  }
+
+  function redGroup3() {
+    right(2, false)
+    goDown()
+    justAttack(8)
+    left(5, false)
+    left(5)
+    right(2, false)
+    goUp()
+    justAttack(2)
+    hop()
+    justAttack(2)
+    left(1, false)
+    turn('right')
+    turn('right')
+    turn('right')
+    jumpFar()
+    justAttack(2)
+    left(2, false)
+    goDown()
+    justAttack(2)
+    hop()
+    justAttack(2)
+    hop()
+    justAttack(2)
+    hop()
+    justAttack(2)
   }
 }
 
