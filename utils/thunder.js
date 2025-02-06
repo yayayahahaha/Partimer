@@ -249,6 +249,10 @@ function jUp() {
   goUp({ type: 'jump' })
 }
 function goUp({ type = 'top' } = {}) {
+  // delay
+  rb.setKeyboardDelay(200)
+  rb.keyTap('7')
+
   rb.setKeyboardDelay(randomNumber(130, 100))
   rb.keyToggle('up', 'down')
 
@@ -284,7 +288,7 @@ function jumpFar() {
   rb.keyTap('alt')
   rb.setKeyboardDelay(100)
   rb.keyTap('alt')
-  rb.setKeyboardDelay(150)
+  rb.setKeyboardDelay(175) // 150
   rb.keyTap('d')
   rb.setKeyboardDelay(50)
   rb.keyTap('w')
@@ -726,8 +730,12 @@ export function movie() {
   }
 }
 
+function pickOne(list = []) {
+  return list[Math.floor(Math.random() * list.length)] ?? null
+}
+
 export function redRobot() {
-  const createMovieList = () => [redBot1, redBot2, redBot3, redRobot4].sort(() => Math.random() - 0.5)
+  const createMovieList = () => [redGroup1, redGroup1, redGroup2, redGroup2, goAndBack].sort(() => Math.random() - 0.5)
 
   let fn = null
   let fnList = createMovieList()
@@ -739,80 +747,362 @@ export function redRobot() {
     fn()
   }
 
-  function redBot1() {
-    right(2, false)
-    hop()
-    justAttack(2)
-    hop()
-    justAttack(2)
-    hop()
-    justAttack(2)
+  function redGroup1() {
+    function goMiddleTop() {
+      function goMiddle1() {
+        right(2, false)
+        jUp()
+        justAttack(2)
+        left(2, false)
+        right(3, false)
+        hop()
+        justAttack(2)
+        left(2, false)
+        right(3, false)
+      }
 
-    left(1, false)
-    jUp()
-    justAttack(2)
-    right(2, false)
-    left(3, false)
-    jumpFar()
-    justAttack(2)
-    goDown()
-    right(2)
-    left(3, false)
-    hop()
-    justAttack(3)
+      function goMiddle2() {
+        right(2, false)
+        hop()
+        justAttack(2)
+        jUp()
+        justAttack(3)
+      }
+
+      function goMiddle3() {
+        right(2, false)
+        goDown()
+        justAttack(2)
+        goUp()
+        justAttack(2)
+      }
+
+      function goMiddle4() {
+        right(2, false)
+        jUp()
+        justAttack(2)
+        left(1, false)
+        turn('right')
+        turn('right')
+        jumpFar()
+        justAttack(2)
+      }
+
+      function goMiddle5() {
+        right(2, false)
+        goDown()
+        justAttack(8)
+        left(5, false)
+        goUp()
+        justAttack(2)
+        right(3, false)
+      }
+
+      const picked = pickOne([goMiddle1, goMiddle2, goMiddle3, goMiddle4, goMiddle5])
+      console.log(picked)
+      picked()
+    }
+
+    function MiddleTop2TopRight() {
+      function M2TR_1() {
+        goDown()
+        justAttack(2)
+        left(1, false)
+        turn('right')
+        turn('right')
+        turn('right')
+        jumpFar()
+        justAttack(2)
+      }
+
+      function M2TR_2() {
+        goDown()
+        justAttack(2)
+        hop()
+        justAttack(2)
+        left(1, false)
+        jUp()
+        justAttack(2)
+        right(1, false)
+      }
+
+      function M2TR_3() {
+        left(1, false)
+        turn('right')
+        jumpFar()
+        justAttack(2)
+      }
+
+      function M2TR_4() {
+        goDown()
+        justAttack(2)
+        goDown()
+        justAttack(2)
+        turn('left')
+        turn('left')
+        goUp()
+        justAttack(2)
+        right(2, false)
+      }
+
+      function M2TR_5() {
+        goDown()
+        justAttack(2)
+        hop()
+        justAttack(2)
+        hop()
+        justAttack(2)
+        turn('left')
+        jumpFar()
+        justAttack(2)
+        right(2, false)
+      }
+
+      const picked = pickOne([M2TR_1, M2TR_2, M2TR_3, M2TR_4, M2TR_5])
+      console.log(picked)
+      picked()
+    }
+
+    function topRightBack() {
+      function topRightBack1() {
+        left(2, false)
+        goDown()
+        justAttack(2)
+        hop()
+        justAttack(2)
+        right(2, false)
+        left(3)
+        hop()
+        justAttack(2)
+        hop()
+        justAttack(2)
+      }
+
+      function topRightBack2() {
+        turn('left')
+        turn('left')
+        turn('left')
+        turn('right')
+        goDown()
+        justAttack(2)
+        left(1, false)
+        goDown()
+        justAttack(2)
+
+        left(5, false)
+        right(2, false)
+        goUp()
+        justAttack(2)
+        left(3, false)
+        right(1, false)
+        goDown()
+        justAttack(2)
+        left(2, false)
+      }
+
+      function topRightBack3() {
+        left(2, false)
+        jumpFar()
+        justAttack(2)
+        hop()
+        justAttack(2)
+        right(1, false)
+        goDown()
+        justAttack(2)
+        left(2, false)
+      }
+
+      function topRightBack4() {
+        left(2, false)
+        jumpFar()
+        justAttack(2)
+        goDown()
+        justAttack(2)
+        hop()
+        justAttack(2)
+      }
+
+      function topRightBack5() {
+        left(2, false)
+        goDown()
+        justAttack(2)
+        hop()
+        justAttack(2)
+        goDown()
+        justAttack(3)
+        goUp()
+        justAttack(2)
+
+        if (halfChance()) {
+          justAttack(1)
+          right(1, false)
+        }
+
+        right(1, false)
+        turn('left')
+        turn('left')
+        goDown()
+        justAttack(2)
+      }
+
+      const picked = pickOne([topRightBack1, topRightBack2, topRightBack3, topRightBack4, topRightBack5])
+      console.log(picked)
+      picked()
+    }
+
+    function goTopRight() {
+      function goTopRight1() {
+        goMiddleTop()
+        MiddleTop2TopRight()
+      }
+
+      function goTopRight2() {
+        right(2, false)
+        goDown()
+        justAttack(5)
+        turn('left')
+        turn('left')
+        goUp()
+        justAttack(2)
+        right(2, false)
+      }
+
+      const picked = pickOne([goTopRight1, goTopRight1, goTopRight1, goTopRight2])
+      console.log(picked)
+      picked()
+    }
+
+    goTopRight()
+    topRightBack()
   }
 
-  function redBot2() {
-    right(2)
-    goDown()
-    justAttack(3)
-    right(5)
+  function goAndBack() {
+    function goAndBack1() {
+      const times = Math.ceil(Math.random() * 3)
+      console.log(`goAndBack times: ${times}`)
+      function _stuff() {
+        Array(times)
+          .fill()
+          .forEach(() => {
+            hop()
+            justAttack(2)
+          })
+      }
 
-    left(11, false)
+      right(2, false)
+      _stuff()
+      left(2, false)
+      _stuff()
+    }
 
-    right(2, false)
-    goUp()
-    justAttack(2)
-    left(3)
-    goDown()
+    function goAndBack2() {
+      right(2, false)
+      hop()
+      jUp()
+      justAttack(2)
+      left(3, false)
+      goDown()
+      justAttack(2)
+      hop()
+      justAttack(2)
+    }
+
+    function goAndBack3() {
+      right(2, false)
+      jUp()
+      justAttack(2)
+      left(3, false)
+      right(1, false)
+      goDown()
+      justAttack(2)
+      left(3, false)
+    }
+
+    const picked = pickOne([goAndBack1, goAndBack2, goAndBack3])
+    console.log(picked)
+    picked()
   }
 
-  function redBot3() {
-    right(2)
-    jUp()
-    justAttack(2)
-    jumpFar()
-    justAttack(2)
-    goDown()
-    justAttack(2)
-    hop()
-    justAttack(2)
+  function redGroup2() {
+    function redBot1() {
+      right(2, false)
+      hop()
+      justAttack(2)
+      hop()
+      justAttack(2)
+      hop()
+      justAttack(2)
 
-    left(2)
-    hop()
-    justAttack(2)
-    hop()
-    justAttack(2)
-    hop()
-    justAttack(2)
-  }
+      left(1, false)
+      jUp()
+      justAttack(2)
+      right(2, false)
+      left(3, false)
+      jumpFar()
+      justAttack(2)
+      goDown()
+      right(2)
+      left(3, false)
+      hop()
+      justAttack(3)
+    }
 
-  function redRobot4() {
-    right(2, false)
-    hop()
-    justAttack(2)
-    hop()
-    justAttack(2)
-    hop()
-    justAttack(2)
+    function redBot2() {
+      right(2)
+      goDown()
+      justAttack(3)
+      right(5)
 
-    left(2, false)
-    hop()
-    justAttack(2)
-    hop()
-    justAttack(2)
-    hop()
-    justAttack(2)
+      left(11, false)
+
+      right(2, false)
+      goUp()
+      justAttack(2)
+      left(3)
+      goDown()
+    }
+
+    function redBot3() {
+      right(2)
+      jUp()
+      justAttack(2)
+      jumpFar()
+      justAttack(2)
+      goDown()
+      justAttack(2)
+      hop()
+      justAttack(2)
+
+      left(2)
+      hop()
+      justAttack(2)
+      hop()
+      justAttack(2)
+      hop()
+      justAttack(2)
+    }
+
+    function redRobot4() {
+      right(2, false)
+      hop()
+      justAttack(2)
+      hop()
+      justAttack(2)
+      hop()
+      justAttack(2)
+
+      left(2, false)
+      hop()
+      justAttack(2)
+      hop()
+      justAttack(2)
+      hop()
+      justAttack(2)
+    }
+
+    const picked = pickOne([redBot1, redBot2, redBot3, redRobot4])
+    console.log(picked)
+    picked()
   }
 }
 
