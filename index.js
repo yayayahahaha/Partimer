@@ -8,20 +8,12 @@ async function start() {
     message: '想做什麼呢',
     choices: [
       {
-        name: '阿爾克斯',
-        value: '阿爾克斯',
-      },
-      {
         name: '奧迪溫',
         value: '奧迪溫',
       },
       {
         name: '桃源境',
         value: '桃源境',
-      },
-      {
-        name: '賽爾尼溫',
-        value: '賽爾尼溫',
       },
       {
         name: 'money',
@@ -39,6 +31,9 @@ async function start() {
         name: 'extract',
         value: 'extract',
       },
+
+      ...畢業了(),
+
       {
         name: 'coordinate 顯示座標',
         value: '顯示座標',
@@ -87,3 +82,16 @@ async function start() {
   }
 }
 start()
+
+function 畢業了() {
+  return [
+    {
+      name: '賽爾尼溫',
+      value: '賽爾尼溫',
+    },
+    {
+      name: '阿爾克斯',
+      value: '阿爾克斯',
+    },
+  ]
+}
