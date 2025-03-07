@@ -522,7 +522,7 @@ async function marketAndExtract({ startWith } = {}) {
 // 讓右上角的小地圖包含地圖名稱一起顯示
 // 把包包移動到切齊地圖名稱下緣、剛好遮住小地圖
 // 然後把 extract function 的座標設定為第一個想要分解的物品  let row = paramRow // 第一個要被分解的物品的座標
-export async function extract({ paramRow = 5, paramColumn = 5 } = {}) {
+export async function extract({ paramRow = 1, paramColumn = 7 } = {}) {
   const { x, y } = getApplicationInfo()
   const confirmColor = {
     ax: x + confirmOffset.x,
