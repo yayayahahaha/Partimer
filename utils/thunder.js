@@ -4,6 +4,7 @@
 
 import rb from 'robotjs'
 import { getApplicationInfo } from './others.js'
+import { delay } from './others.js'
 
 const buffBetweenEach = {
   coldTime: 3 * 1000,
@@ -841,6 +842,11 @@ export function redRobot() {
         turn('left')
         turn('left')
         goUp()
+
+        // 可能會爬上繩子，所以做個防呆
+        rb.keyToggle('up', 'down')
+        sleepWithRb(2000)
+        rb.keyToggle('up', 'up')
         justAttack(2)
         right(2, false)
       }
@@ -963,6 +969,12 @@ export function redRobot() {
         turn('left')
         turn('left')
         goUp()
+
+        // 可能會爬上繩子，所以做個防呆
+        rb.keyToggle('up', 'down')
+        sleepWithRb(2000)
+        rb.keyToggle('up', 'up')
+
         justAttack(2)
         right(2, false)
       }
