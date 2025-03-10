@@ -845,8 +845,12 @@ export function redRobot() {
 
         // 可能會爬上繩子，所以做個防呆
         rb.keyToggle('up', 'down')
-        sleepWithRb(2000)
+        sleepWithRb(750)
+        rb.keyTap('v')
+        sleepWithRb(750)
         rb.keyToggle('up', 'up')
+        jUp()
+
         justAttack(2)
         right(2, false)
       }
@@ -972,8 +976,11 @@ export function redRobot() {
 
         // 可能會爬上繩子，所以做個防呆
         rb.keyToggle('up', 'down')
-        sleepWithRb(2000)
+        sleepWithRb(750)
+        rb.keyTap('v')
+        sleepWithRb(750)
         rb.keyToggle('up', 'up')
+        jUp()
 
         justAttack(2)
         right(2, false)
