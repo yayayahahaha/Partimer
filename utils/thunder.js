@@ -4,7 +4,6 @@
 
 import rb from 'robotjs'
 import { getApplicationInfo } from './others.js'
-import { delay } from './others.js'
 
 const buffBetweenEach = {
   coldTime: 3 * 1000,
@@ -844,12 +843,7 @@ export function redRobot() {
         goUp()
 
         // 可能會爬上繩子，所以做個防呆
-        rb.keyToggle('up', 'down')
-        sleepWithRb(750)
-        rb.keyTap('v')
-        sleepWithRb(750)
-        rb.keyToggle('up', 'up')
-        jUp()
+        rollFoolProof()
 
         justAttack(2)
         right(2, false)
@@ -975,12 +969,7 @@ export function redRobot() {
         goUp()
 
         // 可能會爬上繩子，所以做個防呆
-        rb.keyToggle('up', 'down')
-        sleepWithRb(750)
-        rb.keyTap('v')
-        sleepWithRb(750)
-        rb.keyToggle('up', 'up')
-        jUp()
+        rollFoolProof()
 
         justAttack(2)
         right(2, false)
@@ -1314,4 +1303,41 @@ function sleepWithRb(msec = 200) {
   rb.setKeyboardDelay(msec)
   rb.keyTap('7')
   rb.setKeyboardDelay(10)
+}
+
+// 這個時候是面左的，最後會預計往左 justAttack
+function rollFoolProof() {
+  sleepWithRb(300)
+  justAttack(2)
+
+  rb.keyToggle('up', 'down')
+  sleepWithRb(750)
+  rb.keyToggle('up', 'up')
+  sleepWithRb(200)
+  rb.keyTap('v')
+  sleepWithRb(200)
+  right(1, false)
+  turn('left')
+  turn('left')
+  turn('left')
+  rb.keyTap('v')
+  sleepWithRb(750)
+  jUp()
+}
+
+function outofExpected() {
+  justAttack(2)
+  goDown()
+  justAttack()
+  goDown()
+
+  // 持續檢查，直到在指定位置
+  left(1, fasle)
+
+  right(1)
+  goUp()
+  justAttack(2)
+
+  left(3, false)
+  goDown()
 }
