@@ -734,11 +734,22 @@ function pickOne(list = []) {
   return list[Math.floor(Math.random() * list.length)] ?? null
 }
 
-export function redRobot() {
+export function redRobot(simple = false) {
   const createMovieList = () => [redGroup1, redGroup2, goAndBack].sort(() => Math.random() - 0.5)
+  if (simple) {
+    let downCount = halfChance() ? 4 : 3
+    for (let i = 0; i < 1000; i++) {
+      if (i % downCount === 0) {
+        _redBot2()
+        downCount = halfChance() ? 4 : 3
+      }
+      _redRobot4()
+    }
+    return
+  }
 
   let fn = null
-  let fnList = createMovieList()
+  let fnList = onlyFn ?? createMovieList()
   for (let i = 0; i < 100; i++) {
     fnList = fnList.length === 0 ? [...createMovieList(), halfChance() ? redGroup3 : Function.prototype] : fnList
 
@@ -945,6 +956,8 @@ export function redRobot() {
         right(1, false)
         turn('left')
         turn('left')
+        turn('left')
+        turn('left')
         goDown()
         justAttack(2)
       }
@@ -1031,6 +1044,37 @@ export function redRobot() {
     picked()
   }
 
+  function _redRobot4() {
+    right(2, false)
+    hop()
+    justAttack(2)
+    hop()
+    justAttack(2)
+    hop()
+    justAttack(2)
+
+    left(2, false)
+    hop()
+    justAttack(2)
+    hop()
+    justAttack(2)
+    hop()
+    justAttack(2)
+  }
+  function _redBot2() {
+    right(2)
+    goDown()
+    justAttack(3)
+    right(5)
+
+    left(11, false)
+
+    right(2, false)
+    goUp()
+    justAttack(2)
+    left(3)
+    goDown()
+  }
   function redGroup2() {
     function redBot1() {
       right(2, false)
@@ -1055,21 +1099,6 @@ export function redRobot() {
       justAttack(3)
     }
 
-    function redBot2() {
-      right(2)
-      goDown()
-      justAttack(3)
-      right(5)
-
-      left(11, false)
-
-      right(2, false)
-      goUp()
-      justAttack(2)
-      left(3)
-      goDown()
-    }
-
     function redBot3() {
       right(2)
       jUp()
@@ -1090,25 +1119,7 @@ export function redRobot() {
       justAttack(2)
     }
 
-    function redRobot4() {
-      right(2, false)
-      hop()
-      justAttack(2)
-      hop()
-      justAttack(2)
-      hop()
-      justAttack(2)
-
-      left(2, false)
-      hop()
-      justAttack(2)
-      hop()
-      justAttack(2)
-      hop()
-      justAttack(2)
-    }
-
-    const picked = pickOne([redBot1, redBot2, redBot3, redRobot4])
+    const picked = pickOne([redBot1, _redBot2, redBot3, _redRobot4])
     console.log(picked)
     picked()
   }

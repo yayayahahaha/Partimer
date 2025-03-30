@@ -12,6 +12,10 @@ async function start() {
         value: '奧迪溫',
       },
       {
+        name: '奧迪溫-左右',
+        value: '奧迪溫-左右',
+      },
+      {
         name: '桃源境',
         value: '桃源境',
       },
@@ -50,6 +54,10 @@ async function start() {
 
     case '奧迪溫':
       redRobot()
+      break
+
+    case '奧迪溫-左右':
+      redRobot(true)
       break
 
     case '桃源境':
