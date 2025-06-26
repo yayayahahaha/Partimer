@@ -13,12 +13,14 @@ const 領取中訊息右下_offset = { x: 600, y: 393 }
 const 分解訊息左上_offset = { x: 651, y: 392 }
 const 分解訊息右下_offset = { x: 727, y: 420 }
 
-const 鎮名左上_Offset = { x: 135, y: 60 }
-const 鎮名右下_Offset = { x: 188, y: 80 }
+const 鎮名左上_Offset = { x: 120, y: 74 }
+const 鎮名右下_Offset = { x: 185, y: 96 }
 const 市場標題左上_Offset = { x: 342, y: 77 }
 const 市場標題右下_Offset = { x: 398, y: 98 }
 const 市場搜尋左上_offset = { x: 100, y: 81 }
 const 市場搜尋右下_offset = { x: 250, y: 96 }
+const 當前伺服器勾勾左上_offset = { x: 406, y: 80 }
+const 當前伺服器勾勾右下_offset = { x: 420, y: 94 }
 
 function get領取中Message(x, y) {
   return getTextByOffset(x, y, 領取中訊息左上_offset, 領取中訊息右下_offset, 'chi_tra')
@@ -43,6 +45,9 @@ function getMarketSearch(x, y) {
 }
 function getMarketResult(x, y) {
   return getTextByOffset(x, y, 搜尋結果左上_offset, 搜尋結果右下_offset, 'chi_tra')
+}
+function getCurrentServer(x, y) {
+  return getTextByOffset(x, y, 當前伺服器勾勾左上_offset, 當前伺服器勾勾右下_offset, 'chi_tra')
 }
 
 // TODO 這個蠻好用的，可以改寫放到其他地方試試看
@@ -117,6 +122,9 @@ export async function waitUntil({
 
             case 'result':
               return { fn: getMarketResult, message: message[i] || null }
+
+            case 'current-server':
+              return { fn: getCurrentServer, message: message[i] || null }
           }
         })
 

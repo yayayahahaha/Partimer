@@ -3,14 +3,14 @@
 // 如果畫面不是當前正在執行的地圖了，就要停掉的機制 (要用非同步 + flag才不會打斷)
 
 import rb from 'robotjs'
-import { getApplicationInfo } from './others.js'
+import { delay, getApplicationInfo } from './others.js'
 
 const buffBetweenEach = {
   coldTime: 3 * 1000,
   previousTimestamp: 0,
 }
 let buffList = null
-function generateBuffList() {
+function generateBuffList(buffType = 'all') {
   const previousTimestamp = Date.now()
   return [
     {
@@ -18,67 +18,83 @@ function generateBuffList() {
       coldTime: 120 * 1000,
       priority: false,
       previousTimestamp,
+      buffType: 'buff',
     },
     {
       code: '3',
       coldTime: 120 * 1000,
       priority: true,
       previousTimestamp,
+      buffType: 'buff',
     },
     {
       code: '4',
       coldTime: 240 * 1000,
       priority: false,
       previousTimestamp,
+      buffType: 'buff',
     },
     {
       code: 'home',
       coldTime: 180 * 1000,
       priority: false,
       previousTimestamp,
+      buffType: 'buff',
     },
     {
       code: 'end',
       coldTime: 120 * 1000,
       priority: false,
       previousTimestamp,
-    },
-    {
-      code: 'pagedown',
-      coldTime: 60 * 1000,
-      priority: false,
-      previousTimestamp,
+      buffType: 'buff',
     },
     {
       code: 'delete',
       coldTime: 45 * 1000,
       priority: false,
       previousTimestamp,
+      buffType: 'buff',
     },
     {
       code: '5',
       coldTime: 63 * 1000,
       priority: false,
       previousTimestamp,
+      buffType: 'buff',
     },
     {
       code: 'n',
       coldTime: 250 * 1000,
       priority: false,
       previousTimestamp,
+      buffType: 'buff',
+    },
+
+    {
+      code: 'pagedown',
+      coldTime: 60 * 1000,
+      priority: false,
+      previousTimestamp,
+      buffType: 'stay-attack',
     },
     {
       code: '6',
       coldTime: 30 * 1000,
       priority: true,
       previousTimestamp,
+      buffType: 'stay-attack',
     },
-  ]
+  ].filter((buffInfo) => {
+    if (buffType === 'all') return true
+    return buffType === buffInfo.buffType
+  })
 }
 
-function buffStuff(test = false) {
+function buffStuff(buffType) {
+  if (buffType === 'no') return
+
   const current = Date.now()
-  if (buffList == null) buffList = generateBuffList()
+  if (buffList == null) buffList = generateBuffList(buffType)
 
   // 因為是放在攻擊之間，所以如果兩次放 buff 的間隔如果太近就直接跳掉，
   if (buffBetweenEach.previousTimestamp + buffBetweenEach.coldTime > current) return
@@ -89,7 +105,7 @@ function buffStuff(test = false) {
   // 有 priority 的放前面
   const list = buffList.sort(() => Math.random() - 0.5).sort((a) => (a.priority ? -1 : 1))
 
-  test && console.log('buff list: ', JSON.stringify(list.map((item) => item.code)))
+  // console.log('buff list: ', JSON.stringify(list.map((item) => item.code)))
 
   for (let i = 0; i < list.length; i++) {
     const buff = list[i]
@@ -102,8 +118,6 @@ function buffStuff(test = false) {
       // buff part
       rb.setKeyboardDelay(randomNumber(1200, 1000))
       rb.keyTap(buff.code)
-
-      test && console.log(`buff: ${buff.code}`)
 
       // 隨機讓他更久一些
       buff.previousTimestamp = Date.now() + randomNumber(2000, 1000)
@@ -137,9 +151,9 @@ const attackList = [
   },
 ]
 
-async function attack({ useDefault = false, afterDelay = null } = {}) {
+function attack({ useDefault = false, afterDelay = null, buffType = 'all' } = {}) {
   // 攻擊前放 buff
-  buffStuff()
+  buffStuff(buffType)
 
   // 檢查是不是在該在的 application
   const { applicationTitle: oriTitle } = getApplicationInfo({ showConsole: false })
@@ -178,7 +192,16 @@ async function attack({ useDefault = false, afterDelay = null } = {}) {
   }
 }
 
-function attackThrough({ times = 5, direction = 'left', goBack = false, moveFirst = true, afterDelay = 200 } = {}) {
+function attackThrough({
+  times = 5,
+  direction = 'left',
+  goBack = false,
+  moveFirst = true,
+  afterDelay = 200,
+  useAttack = attack,
+} = {}) {
+  const attack = useAttack
+
   if (moveFirst) turn(direction)
 
   if (!goBack) {
@@ -315,423 +338,169 @@ export function test() {
   hop()
 }
 
-export async function battleField() {
-  // TODO 在 robot 在跑的時候，這個 listenerStuff 就不會作用了
-  // 可能要改成判斷螢幕上的東西來做停止? 像是地名之類的
-  justStuff()
-
-  let stuffList = createStuffList()
-  let toFn = (f) => f
-
-  let roundList = createRoundList()
-  let roundFn = (f) => f
-
-  halfChance() && horizonMove()
-  for (let i = 0; i < 100; i++) {
-    if (i % 4 === 0 || i % randomNumber(3, 2) === 0) checkAround()
-
-    checkStuff()
-
-    horizonMove()
-  }
-
-  function checkStuff() {
-    if (stuffList.length === 0) stuffList = createStuffList()
-    console.log('stuffList:', stuffList)
-    toFn = stuffList.splice(0, 1)[0]
-    toFn()
-  }
-
-  function checkAround() {
-    if (roundList.length === 0) roundList = createRoundList()
-    console.log('roundList:', roundList)
-    roundFn = roundList.splice(0, 1)[0]
-    roundFn()
-  }
-
-  function horizonMove(test = false) {
-    const moveTimes = randomNumber(2, 1)
-    const times = randomNumber(6, 4)
-
-    console.log(`${moveTimes} times ${times} steps`)
-
-    test && console.log(`horizonMove moveTimes: ${moveTimes}`)
-    for (let i = 0; i < moveTimes; i++) {
-      attackThrough({ direction: 'right', times, goBack: halfChance() })
-      attackThrough({ direction: 'left', times, goBack: halfChance() })
-
-      test && console.log(`還有 ${moveTimes - i - 1} 趟`)
-    }
-  }
-
-  function createStuffList() {
-    return [upStuff, rightStuff, leftStuff, justStuff].sort(() => Math.random() - 0.5)
-  }
-  function createRoundList() {
-    const r1 = () => around(1)
-    const r2 = () => around(2)
-    const r3 = () => around(3)
-
-    const list = [r1, r2, r1, r2].sort(() => Math.random() - 0.5)
-    const randomIndex = randomNumber(list.length) - 1
-    list.splice(randomIndex, 0, r3)
-    list.splice((randomIndex + 2) % list.length, 0, r3)
-
-    return list
-  }
-
-  function justStuff(way = randomNumber(3)) {
-    console.log('just stuff: ', way)
-    switch (way) {
-      case 1:
-        return _justStuff1()
-      case 2:
-        return _justStuff2()
-      case 3:
-      default:
-        return _justStuff3()
-    }
-
-    function _justStuff1() {
-      right(3)
-      left(4, false)
-      right(2)
-      jumpFar()
-      justAttack(2)
-      left(3)
-      jumpFar()
-      justAttack(2)
-      right(3)
-      goDown()
-      left(2, false)
-      goDown()
-      right(1, false)
-      left(2)
-    }
-
-    function _justStuff2() {
-      right(2)
-      left(3, false)
-      hop()
-      justAttack(1)
-      right(2, false)
-      jumpFar()
-      justAttack(1)
-      hop()
-      justAttack(3)
-      left(1, false)
-      goDown()
-      justAttack(2)
-      hop()
-      justAttack(3)
-    }
-
-    function _justStuff3() {
-      right(2, false)
-      justAttack(1)
-      hop()
-      justAttack(2)
-      left(3, false)
-      jumpFar()
-      justAttack(1)
-      hop()
-      justAttack(2)
-      right(3, false)
-      hop()
-      justAttack(1)
-      hop()
-      right(2, false)
-      left(4, false)
-      jumpFar()
-      justAttack(2)
-      goDown()
-      right(2)
-      goDown()
-      right(1, false)
-      left(2)
-    }
-  }
-
-  function upStuff(way = randomNumber(2)) {
-    console.log('upStuff: ', way)
-    switch (way) {
-      case 1:
-        return _upStuff1()
-
-      case 2:
-      default:
-        return _upStuff2()
-    }
-
-    function _upStuff1() {
-      goUp()
-      right(2, false)
-      left(2, false)
-      right(3)
-      goDown()
-
-      justAttack(1)
-      left(2)
-      right(3)
-      goDown()
-
-      justAttack(1)
-      left(5)
-    }
-
-    function _upStuff2() {
-      right(2)
-      left(3, false)
-      hop()
-
-      justAttack(1)
-      right(2, false)
-      goUp()
-
-      right(3)
-      left(3, false)
-      goDown()
-
-      left(1, false)
-      right(3, false)
-      goDown()
-    }
-  }
-  function rightStuff(way = randomNumber(2)) {
-    console.log('rightStuff: ', way)
-    switch (way) {
-      case 1:
-        return _rightStuff1()
-      case 2:
-      default:
-        return _rightStuff2()
-    }
-
-    function _rightStuff1() {
-      right(6)
-      hop()
-
-      justAttack(2)
-      left(3, false)
-      hop()
-
-      left(5)
-    }
-
-    function _rightStuff2() {
-      right(2, false)
-      left(3, false)
-      goUp()
-
-      right(2, false)
-      goDown()
-
-      left(2)
-      right(3, false)
-      hop()
-
-      right(3)
-      left(3, false)
-      hop()
-
-      left(2, false)
-      goDown()
-
-      justAttack(2)
-    }
-  }
-  function leftStuff(way = randomNumber(2)) {
-    console.log('leftStuff: ', way)
-    switch (way) {
-      case 1:
-        return _leftStuff1()
-
-      case 2:
-      default:
-        return _leftStuff2()
-    }
-
-    function _leftStuff1() {
-      right(3)
-      left(5)
-      hop()
-
-      justAttack(1)
-      right(2, false)
-      hop()
-
-      right(5)
-      left(5)
-    }
-
-    function _leftStuff2() {
-      right(5)
-      hop()
-
-      justAttack(2)
-      jUp()
-
-      left(4, false)
-      hop()
-
-      justAttack(2)
-      hop()
-
-      justAttack(1)
-      right(2, false)
-
-      goDown()
-    }
-  }
-  function around(way = randomNumber(3)) {
-    console.log('around: ', way)
-    switch (way) {
-      case 1:
-        return _aroundStuff1()
-
-      case 2:
-        return _aroundStuff2()
-
-      case 3:
-      default:
-        return _aroundStuff3()
-    }
-
-    function _aroundStuff1() {
-      right(4)
-      hop()
-
-      justAttack(2)
-      jUp()
-
-      left(4)
-      hop()
-
-      justAttack(3)
-      hop()
-
-      justAttack(2)
-      right(2)
-      jUp()
-
-      left(2)
-      right(3)
-      goDown()
-
-      right(2)
-      goDown()
-
-      left(3)
-    }
-
-    function _aroundStuff2() {
-      right(3)
-      left(4)
-      hop()
-
-      justAttack(2)
-      right(2)
-      jUp()
-
-      justAttack(1)
-      hop()
-
-      justAttack(2)
-      hop()
-
-      justAttack(3)
-      left(3)
-      hop()
-
-      justAttack(1)
-      jUp()
-
-      justAttack(2)
-      goDown()
-
-      right(2)
-      goDown()
-    }
-
-    function _aroundStuff3() {
-      right(3, false)
-      goDown()
-
-      right(3, false)
-      left(3, false)
-      left(3)
-      left(3, false)
-      right(1, false)
-      jUp()
-
-      right(3, false)
-      goDown()
-
-      right(3)
-      hop()
-      right(2)
-      jUp()
-
-      left(4)
-      jumpFar()
-      justAttack(2)
-      goDown()
-
-      right(2)
-      goDown()
-
-      right(1, false)
-      left(3)
-    }
-  }
+function pickOne(list = []) {
+  return list[Math.floor(Math.random() * list.length)] ?? null
 }
 
-export function movie() {
-  const createMovieList = () => [movie1].sort(() => Math.random() - 0.5)
-  // const createMovieList = () => [type1].sort(() => Math.random() - 0.5)
-
-  let fn = null
-  let fnList = createMovieList()
-  for (let i = 0; i < 100; i++) {
-    fnList = fnList.length === 0 ? createMovieList() : fnList
-
-    console.log('fnList:', fnList)
-    fn = fnList.splice(0, 1)[0]
-    fn()
+export async function 奧迪溫雅努斯() {
+  const buffAttack = () => attack({ buffType: 'buff' })
+  const justAttack = (time = 1) => [...Array(time)].forEach(buffAttack)
+  const left = async (time = 1) => {
+    await delay(100)
+    turn('left')
+    await delay(100)
+    justAttack(time)
+  }
+  const right = async (time = 1) => {
+    await delay(100)
+    turn('right')
+    await delay(100)
+    justAttack(time)
   }
 
-  function movie1() {
-    right(2)
-    left(4)
-    goDown()
-    right(5)
-    justAttack(3)
-    left(1, false)
-    goUp()
-    justAttack(3)
-    jUp()
-    justAttack(2)
-    right(3, false)
-    left(4)
+  for (let i = 0; i < 1000; i++) {
+    await aLoop()
+  }
 
+  async function aLoop() {
+    await _downBack()
+    await _setBack()
+    for (let i = 0; i < 10; i++) {
+      await standAttack()
+      await delay(1312, 0)
+    }
+  }
+
+  async function standAttack(time = 1) {
+    for (let i = 0; i < time; i++) {
+      turn('right')
+      rb.keyTap('v')
+      await delay(500)
+      turn('left')
+      rb.keyTap('v')
+    }
+  }
+
+  async function _downBack() {
+    await right(2)
     goDown()
+    await right(7)
+    await left(10)
+    await right(2)
+    goUp()
+    justAttack()
+    await left(1)
+    goDown()
+  }
+
+  async function _setBack() {
+    await right(2)
+    hop()
     justAttack(2)
     hop()
     justAttack(2)
+    hop()
+    await delay(100)
+    rb.keyTap(6)
+
+    await delay(300)
+    goUp({ type: 'jump' })
+    await delay(700)
     goDown()
+    await delay(700)
+
+    await left(2)
+    hop()
+    await delay(100)
+    rb.keyTap(6)
     justAttack(2)
-    goUp()
+    hop()
+    await delay(100)
+    rb.keyTap('pagedown')
     justAttack(2)
-    goDown()
-    left(3)
-    goDown()
-    right(3)
-    goDown()
+    hop()
   }
 }
 
-function pickOne(list = []) {
-  return list[Math.floor(Math.random() * list.length)] ?? null
+export async function 實驗室() {
+  const buffAttack = () => attack({ buffType: 'buff' })
+  const justAttack = (times = 1) => attackThrough({ moveFirst: false, times, goBack: false, useAttack: buffAttack })
+  const left = (times = 1) => attackThrough({ direction: 'left', times, goBack: false, useAttack: buffAttack })
+  const right = (times = 1) => attackThrough({ direction: 'right', times, goBack: false, useAttack: buffAttack })
+
+  async function newLabLoop() {
+    right(3)
+    rb.keyTap('alt')
+    rb.keyTap('6')
+    await delay(250)
+    left(3)
+    goDown()
+    justAttack(1)
+    right(2)
+    goDown()
+
+    rb.keyTap('pagedown')
+    await delay(400)
+    right(1)
+    await delay(100)
+
+    left(9)
+    await delay(150)
+    right(1)
+    goUp()
+    justAttack(1)
+    await delay(150)
+    rb.keyTap('alt')
+    rb.keyTap('6')
+    await delay(250)
+    goDown()
+    await delay(150)
+    goDown()
+    await delay(150)
+    right(5)
+    goUp()
+    justAttack(3)
+    goDown()
+    justAttack(2)
+    await delay(150)
+    left(3)
+    await delay(100)
+    hop()
+    justAttack(2)
+    await delay(100)
+    hop()
+    justAttack(2)
+    right(1)
+    hop()
+
+    justAttack(3)
+    goDown()
+    justAttack(2)
+    await delay(150)
+    left(3)
+    await delay(100)
+    hop()
+    justAttack(2)
+    await delay(100)
+    hop()
+    justAttack(2)
+    right(1)
+    await delay(100)
+    hop()
+
+    justAttack(4)
+    left(1)
+    goUp()
+    justAttack(1)
+    goDown()
+    justAttack(2)
+    right(1)
+    goDown()
+  }
+
+  for (let i = 0; i < 100; i++) {
+    await newLabLoop()
+  }
 }
 
 export function redRobot(simple = false) {
@@ -749,7 +518,7 @@ export function redRobot(simple = false) {
   }
 
   let fn = null
-  let fnList = onlyFn ?? createMovieList()
+  let fnList = []
   for (let i = 0; i < 100; i++) {
     fnList = fnList.length === 0 ? [...createMovieList(), halfChance() ? redGroup3 : Function.prototype] : fnList
 
@@ -1154,158 +923,110 @@ export function redRobot(simple = false) {
 }
 
 export function spring() {
-  const downPart = halfChance() ? s3 : s4
-  const createList = () => [sp1, sp2, downPart, s5].sort(() => Math.random() - 0.5)
+  const genFnList = () => [sp1, sp2, sp3, sp4, sp5, sp6]
+  let fnList = []
 
-  let fn = null
-  let fnList = createList()
-  for (let i = 0; i < 100; i++) {
-    fnList = fnList.length === 0 ? createList() : fnList
-
-    console.log('fnList:', fnList)
-    fn = fnList.splice(0, 1)[0]
+  for (let i = 0; i < 1000; i++) {
+    if (fnList.length === 0) fnList = [...new Array(randomNumber(3, 1))].map(() => genFnList()).flat()
+    const fn = fnList.splice(randomNumber(fnList.length - 1, 0), 1)[0]
+    console.log(fn, fnList)
     fn()
   }
 
   function sp1() {
-    right(2, false)
+    right(3)
     hop()
-    justAttack(2)
-    goUp()
-    justAttack(2)
-    left(4)
-    goDown()
-    justAttack(2)
-    right(4)
-    goDown()
-    justAttack(2)
-    left(3)
+    justAttack(halfChance() ? 1 : 2)
     hop()
-    justAttack(2)
+    justAttack(halfChance() ? 1 : 2)
+    hop()
+    justAttack(halfChance() ? 2 : 3)
+    goDown()
+    justAttack(1)
+    goDown()
+    left(halfChance() ? 6 : 8)
+    goDown()
   }
 
   function sp2() {
-    right(2, false)
-    hop()
-    justAttack(2)
-    goUp()
-    justAttack(2)
-    left(4)
-    goDown()
-    justAttack(2)
-    right(4)
-
-    hop()
-    justAttack(2)
-    hop()
-    justAttack(2)
-    jUp()
-    justAttack(2)
-    hop()
-    justAttack(1)
-    right(3)
-    left(2, false)
-    goDown()
-    justAttack(1)
-    right(3)
-    goDown()
-    justAttack(1)
-    left(2, false)
-    hop()
-    justAttack(2)
-    goUp()
-    justAttack(2)
-    goDown()
-    justAttack(2)
-    hop()
-    justAttack(2)
-    goDown()
-    justAttack(2)
-    hop()
-    justAttack(2)
-  }
-
-  function s3() {
-    right(2, false)
-    goDown()
-    justAttack(9)
-    left(2, false)
-    goUp()
-    justAttack(3)
-    hop()
-    justAttack(2)
-    hop()
-    justAttack(2)
-    jUp()
-    justAttack(2)
-    hop()
-    justAttack(2)
     right(2)
     goDown()
+    justAttack(1)
+    left(halfChance() ? 2 : 3)
+    goDown()
+    justAttack(1)
+    right(halfChance() ? 4 : 6)
+    goDown()
+  }
+
+  function sp3() {
     right(3)
-    goDown()
-    left(2, false)
     hop()
-    justAttack(2)
+    justAttack(halfChance() ? 1 : 2)
+    hop()
+    justAttack(halfChance() ? 1 : 2)
+    goDown()
+    justAttack(halfChance() ? 1 : 2)
+    left(halfChance() ? 2 : 3)
+    goDown()
+    justAttack(5)
+    goDown()
   }
 
-  function s4() {
-    right(2, false)
+  function sp4() {
+    right(2)
     goDown()
-    justAttack(3)
-    right(6)
-    left(2, false)
-    goUp()
-    justAttack(2)
-    goDown()
-    justAttack(3)
-    goUp()
-    justAttack(1)
-    hop()
-    justAttack(2)
+    justAttack(halfChance() ? 1 : 2)
+    left(halfChance() ? 2 : 3)
     hop()
     justAttack(1)
-    right(2, false)
     goDown()
     justAttack(1)
-    left(3)
-    right(4, false)
+    right(halfChance() ? 6 : 8)
     goDown()
-    justAttack(1)
-    left(3, false)
-    hop()
-    justAttack(2)
   }
 
-  function s5() {
-    right(2, false)
+  function sp5() {
+    right(3)
     hop()
-    justAttack(2)
+    justAttack(halfChance() ? 1 : 2)
+    hop()
+    justAttack(halfChance() ? 1 : 2)
+    hop()
+    justAttack(halfChance() ? 1 : 2)
+    left(halfChance() ? 2 : 3)
+    goDown()
+    justAttack(1)
+    right(halfChance() ? 3 : 4)
+    goDown()
+    justAttack(1)
+    left(halfChance() ? 4 : 6)
+    goDown()
+  }
+
+  function sp6() {
+    left(2)
+    right(1, false)
+    goDown()
+    justAttack(1)
+    hop()
+    justAttack(halfChance() ? 1 : 2)
     goUp()
     justAttack(2)
     hop()
-    justAttack(1)
+    justAttack(halfChance() ? 1 : 2)
     hop()
-    justAttack(3)
+    justAttack(1)
     left(1, false)
     goDown()
-    justAttack(2)
-    right(3)
-    left(4)
-    hop()
-    justAttack()
-    hop()
-    justAttack()
-    jUp()
-    justAttack(2)
+    justAttack(1)
+    right(3, false)
+    left(halfChance() ? 3 : 2, false)
     goDown()
-    justAttack(3)
-    right(4)
+    justAttack(halfChance() ? 1 : 2)
     goDown()
-    justAttack()
-    left(2, false)
-    hop()
-    justAttack(2)
+    justAttack(randomNumber(6, 3))
+    goDown()
   }
 }
 
@@ -1334,21 +1055,4 @@ function rollFoolProof() {
   rb.keyTap('v')
   sleepWithRb(750)
   jUp()
-}
-
-function outofExpected() {
-  justAttack(2)
-  goDown()
-  justAttack()
-  goDown()
-
-  // 持續檢查，直到在指定位置
-  left(1, fasle)
-
-  right(1)
-  goUp()
-  justAttack(2)
-
-  left(3, false)
-  goDown()
 }

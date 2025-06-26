@@ -1,6 +1,6 @@
 import { beforeStart, displayMousePosition } from './utils/others.js'
 import { extract, market, money } from './utils/money-utils.js'
-import { battleField, movie, redRobot, spring } from './utils/thunder.js'
+import { redRobot, spring, 奧迪溫雅努斯, 實驗室 } from './utils/thunder.js'
 import select from '@inquirer/select'
 
 async function start() {
@@ -16,8 +16,16 @@ async function start() {
         value: '奧迪溫-左右',
       },
       {
+        name: '奧迪溫-雅努斯',
+        value: '奧迪溫-雅努斯',
+      },
+      {
         name: '桃源境',
         value: '桃源境',
+      },
+      {
+        name: '奧迪溫實驗室',
+        value: '奧迪溫實驗室',
       },
       {
         name: 'money',
@@ -36,8 +44,6 @@ async function start() {
         value: 'extract',
       },
 
-      ...畢業了(),
-
       {
         name: 'coordinate 顯示座標',
         value: '顯示座標',
@@ -48,10 +54,6 @@ async function start() {
 
   await beforeStart(3)
   switch (selectAnswer) {
-    case '阿爾克斯':
-      movie()
-      break
-
     case '奧迪溫':
       redRobot()
       break
@@ -60,12 +62,16 @@ async function start() {
       redRobot(true)
       break
 
+    case '奧迪溫-雅努斯':
+      奧迪溫雅努斯()
+      break
+
     case '桃源境':
       spring()
       break
 
-    case '賽爾尼溫':
-      battleField()
+    case '奧迪溫實驗室':
+      實驗室()
       break
 
     case 'money':
@@ -90,16 +96,3 @@ async function start() {
   }
 }
 start()
-
-function 畢業了() {
-  return [
-    {
-      name: '賽爾尼溫',
-      value: '賽爾尼溫',
-    },
-    {
-      name: '阿爾克斯',
-      value: '阿爾克斯',
-    },
-  ]
-}

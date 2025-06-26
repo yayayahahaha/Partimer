@@ -32,6 +32,7 @@ const completeOffset = { x: 920, y: 120 }
 const recievedButtonOffset = { x: 970, y: 170 }
 const 頁碼左上_offset = { x: 619, y: 156 }
 const 頁碼右下_offset = { x: 668, y: 176 }
+const 當前伺服器勾勾_offset = { x: 410, y: 80 }
 
 // 分解欄位的按鈕的座標
 const extractOpenOffset = { x: 485, y: 489 }
@@ -43,6 +44,9 @@ const RECIEVE_ITEMS_STATUS_MAP = {
   NEED_CONTINUE: 'NEED_CONTINUE',
 }
 const MARKET_STATUS_MAP = {
+  到不了鎮上: '到不了鎮上',
+  到不了市場: '到不了市場',
+  勾不起來: '勾不起來',
   MARKET_MATCH_MAX_STATYS: 'MARKET_MATCH_MAX_STATYS',
   MARKET_NO_MORE_STATUS: 'MARKET_NO_MORE_STATUS',
 }
@@ -52,6 +56,13 @@ async function englishMarket(x, y) {
   moveMouseByOffset(x, y, 市場搜尋_offset, { randomX: 2, randomY: 1 })
   await delay()
   clickMouse()
+  await delay()
+  rb.keyTap('backspace')
+  rb.keyTap('backspace')
+  rb.keyTap('backspace')
+  rb.keyTap('backspace')
+  rb.keyTap('backspace')
+  rb.keyTap('backspace')
   await delay()
   keyIn('123')
 
@@ -482,12 +493,17 @@ async function buyWithNoNo(
 
 const 離開市場_offset = { x: 977, y: 56 }
 
+const TOWN_MESSAGE = '斯特鎮'
+
 async function marketAndExtract({ startWith } = {}) {
   const { x, y } = getApplicationInfo()
 
   if (startWith === 'town') {
-    const townName = await waitUntil({ x, y, maxWait: 10 * 1000, message: '梅斯特', place: 'town' })
-    if (townName == null) return void console.log('要先到鎮上喔')
+    const townName = await waitUntil({ x, y, maxWait: 10 * 1000, message: TOWN_MESSAGE, place: 'town' })
+    if (townName == null) {
+      console.log('要先到鎮上喔')
+      return { status: MARKET_STATUS_MAP.到不了鎮上 }
+    }
 
     keyIn([']', ...Array(4).fill('down')])
     rb.keyTap('enter')
@@ -502,7 +518,41 @@ async function marketAndExtract({ startWith } = {}) {
     message: '完全一致',
     place: 'market-title',
   })
-  if (inMarket == null) return void console.log('到不了市場。。。')
+  if (inMarket == null) {
+    console.log('到不了市場..')
+    return { status: MARKET_STATUS_MAP.到不了市場 }
+  }
+
+  // 勾選當前伺服器道具
+  console.log('開始嘗試勾選僅限當前伺服器道具')
+  let isCurrentServerChecked = await waitUntil({
+    x,
+    y,
+    maxWait: 2 * 1000,
+    message: '劃',
+    place: 'current-server',
+  })
+  if (isCurrentServerChecked == null) {
+    console.log('僅限當前伺服器道具是沒有勾起來的，試著勾勾看')
+    await delay()
+    moveMouseByOffset(x, y, 當前伺服器勾勾_offset)
+    await delay()
+    clickMouse()
+    await delay()
+    moveMouseByOffset(x, y, { ...當前伺服器勾勾_offset, x: 當前伺服器勾勾_offset.x + 50 })
+  }
+  isCurrentServerChecked = await waitUntil({
+    x,
+    y,
+    maxWait: 10 * 1000,
+    message: '劃',
+    place: 'current-server',
+  })
+  if (isCurrentServerChecked == null) {
+    console.log('勾不起來..')
+    return { status: MARKET_STATUS_MAP.勾不起來 }
+  }
+  console.log('勾選成功')
 
   const marketResult = await market()
 
@@ -531,7 +581,7 @@ export async function extract({ paramRow = 1, paramColumn = 7 } = {}) {
   }
 
   // 等待畫面中 place: town 的地方的文字變成 梅斯特 的意思
-  const townName = await waitUntil({ x, y, maxWait: 60 * 1000, message: '梅斯特', place: 'town' })
+  const townName = await waitUntil({ x, y, maxWait: 60 * 1000, message: TOWN_MESSAGE, place: 'town' })
   if (townName == null) return void console.log('這裡是哪裡，我要去鎮上')
 
   // 開啟物品欄 -> 點選裝備
