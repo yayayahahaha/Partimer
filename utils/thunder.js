@@ -134,19 +134,22 @@ const attackList = [
   {
     code: 'g',
     coldTime: 8 * 1000,
-    delayTime: 100,
+    beforeWaveDelay: 100,
+    waveDelayTime: 150,
     previousTimestamp: null,
   },
   {
     code: 'a',
     coldTime: 13 * 1000,
-    delayTime: 75,
+    beforeWaveDelay: 100,
+    waveDelayTime: 100,
     previousTimestamp: null,
   },
   {
     code: 'y',
     coldTime: 45 * 1000,
-    delayTime: 75,
+    beforeWaveDelay: 100,
+    waveDelayTime: 120,
     previousTimestamp: null,
   },
 ]
@@ -164,23 +167,26 @@ function attack({ useDefault = false, afterDelay = null, buffType = 'all' } = {}
   // 雖然已經很近了，但每個技能還是多少有一些時間差
   // 不設定這個的話霹靂可以更快，但位置會跑掉
   // 或許可以設定每個技能有不同的延遲
-  rb.setKeyboardDelay(randomNumber(120, 100))
+  rb.setKeyboardDelay(110)
 
   let alreayAttack = false
   const current = Date.now()
+  let attackPayload = null
   for (let i = 0; i < attackList.length && !useDefault; i++) {
-    const attack = attackList[i]
-    if (attack.previousTimestamp == null) attack.previousTimestamp = Date.now()
-    if (attack.previousTimestamp + attack.coldTime < current) {
+    const attackPayload = attackList[i]
+    if (attackPayload.previousTimestamp == null) attackPayload.previousTimestamp = Date.now()
+    if (attackPayload.previousTimestamp + attackPayload.coldTime < current) {
       alreayAttack = true
-      rb.keyTap(attack.code)
+      rb.setKeyboardDelay(attackPayload.beforeWaveDelay)
+      rb.keyTap(attackPayload.code)
 
       // 隨機讓他更久一些
-      attack.previousTimestamp = Date.now() + randomNumber(2000, 1000)
+      attackPayload.previousTimestamp = Date.now() + randomNumber(2000, 1000)
+      break
     }
   }
 
-  const waveDelay = alreayAttack ? afterDelay || attack.delayTime : 100
+  const waveDelay = alreayAttack ? afterDelay ?? attackPayload?.waveDelayTime ?? 100 : 100
   if (!alreayAttack) _defaultAttack()
 
   rb.setKeyboardDelay(waveDelay)
@@ -423,6 +429,8 @@ export async function 奧迪溫雅努斯() {
 }
 
 export async function 實驗室() {
+  rb.keyTap('b')
+
   const buffAttack = () => attack({ buffType: 'buff' })
   const justAttack = (times = 1) => attackThrough({ moveFirst: false, times, goBack: false, useAttack: buffAttack })
   const left = (times = 1) => attackThrough({ direction: 'left', times, goBack: false, useAttack: buffAttack })
@@ -430,6 +438,7 @@ export async function 實驗室() {
 
   async function newLabLoop() {
     right(3)
+    await delay(150)
     rb.keyTap('alt')
     rb.keyTap('6')
     await delay(250)
@@ -439,6 +448,7 @@ export async function 實驗室() {
     right(2)
     goDown()
 
+    await delay(200)
     rb.keyTap('pagedown')
     await delay(400)
     right(1)
@@ -470,10 +480,13 @@ export async function 實驗室() {
     await delay(100)
     hop()
     justAttack(2)
+    await delay(100)
     right(1)
+    await delay(100)
     hop()
 
     justAttack(3)
+    await delay(100)
     goDown()
     justAttack(2)
     await delay(150)
@@ -484,16 +497,20 @@ export async function 實驗室() {
     await delay(100)
     hop()
     justAttack(2)
+    await delay(100)
     right(1)
     await delay(100)
     hop()
 
     justAttack(4)
     left(1)
+    await delay(100)
     goUp()
     justAttack(1)
+    await delay(100)
     goDown()
     justAttack(2)
+    await delay(100)
     right(1)
     goDown()
   }
@@ -504,6 +521,8 @@ export async function 實驗室() {
 }
 
 export function redRobot(simple = false) {
+  rb.keyTap('b')
+
   const createMovieList = () => [redGroup1, redGroup2, goAndBack].sort(() => Math.random() - 0.5)
   if (simple) {
     let downCount = halfChance() ? 4 : 3
@@ -923,6 +942,8 @@ export function redRobot(simple = false) {
 }
 
 export function spring() {
+  rb.keyTap('b')
+
   const genFnList = () => [sp1, sp2, sp3, sp4, sp5, sp6]
   let fnList = []
 
@@ -1026,6 +1047,164 @@ export function spring() {
     justAttack(halfChance() ? 1 : 2)
     goDown()
     justAttack(randomNumber(6, 3))
+    goDown()
+  }
+}
+
+export async function spring2() {
+  const buffAttack = () => attack({ buffType: 'buff' })
+  const justAttack = (times = 1) => attackThrough({ moveFirst: false, times, goBack: false, useAttack: buffAttack })
+  const left = (times = 1) => attackThrough({ direction: 'left', times, goBack: false, useAttack: buffAttack })
+  const right = (times = 1) => attackThrough({ direction: 'right', times, goBack: false, useAttack: buffAttack })
+
+  const genFn = () => [s_1]
+  let fnList = []
+  for (let i = 0; i < 100; i++) {
+    if (fnList.length === 0) fnList = genFn()
+    const fn = fnList.splice(0, 1)[0]
+    await fn()
+  }
+
+  async function s_1(buff = false) {
+    if (buff) {
+      rb.keyTap('b')
+      await delay(300)
+    }
+
+    goDown()
+    await delay(50)
+    rb.keyTap('6')
+    await delay(50)
+    goDown()
+    await delay(50)
+    right(2)
+    await delay(50)
+
+    if (halfChance()) {
+      justAttack(1)
+      await delay(50)
+      goUp({ type: 'jump' })
+      await delay(50)
+      justAttack(1)
+      await delay(50)
+      goUp({ type: 'jump' })
+      await delay(50)
+    } else {
+      rb.keyTap('t')
+      await delay(1800)
+    }
+
+    justAttack(2)
+    await delay(50)
+    left(3)
+    await delay(50)
+    right(1)
+    await delay(50)
+    goDown()
+    await delay(50)
+    justAttack(2)
+    await delay(50)
+    goDown()
+    await delay(50)
+    rb.keyTap('alt')
+    rb.keyTap('6')
+    await delay(50)
+    justAttack(2)
+    await delay(50)
+
+    if (halfChance()) {
+      hop()
+      await delay(50)
+      justAttack(2)
+      await delay(50)
+      rb.keyTap('t')
+      await delay(1500)
+      justAttack(2)
+      await delay(50)
+      hop()
+      await delay(50)
+      justAttack(2)
+      await delay(50)
+      goDown()
+      await delay(50)
+      justAttack(1)
+      await delay(50)
+      left(3)
+      await delay(50)
+      goDown()
+      await delay(50)
+      rb.keyTap('pagedown')
+      await delay(50)
+    } else {
+      goDown()
+      await delay(50)
+      right(3)
+      await delay(50)
+      rb.keyTap('t')
+      await delay(2300)
+      justAttack(2)
+      await delay(50)
+      goDown()
+      await delay(50)
+      justAttack(1)
+      await delay(50)
+      left(2)
+      await delay(50)
+      goDown()
+      await delay(50)
+      rb.keyTap('pagedown')
+      await delay(50)
+    }
+
+    justAttack(2)
+    await delay(50)
+    right(1)
+    await delay(50)
+    goUp()
+    await delay(300)
+    justAttack(2)
+    await delay(50)
+    left(3)
+    await delay(50)
+    goDown()
+    await delay(50)
+
+    if (halfChance()) {
+      justAttack(3)
+      await delay(50)
+      right(1)
+      await delay(50)
+      goDown()
+      await delay(50)
+      justAttack(2)
+      await delay(50)
+      left(2)
+      await delay(50)
+      right(2)
+      await delay(50)
+      goUp()
+      await delay(50)
+      justAttack(2)
+      await delay(50)
+      goDown()
+      await delay(50)
+      justAttack(2)
+    } else {
+      for (let j = 0; j < 3; j++) {
+        left(3)
+        await delay(50)
+        right(3)
+        await delay(50)
+      }
+    }
+
+    goDown()
+    await delay(50)
+    justAttack(2)
+    goDown()
+    await delay(200)
+    left(9)
+    await delay(50)
     goDown()
   }
 }

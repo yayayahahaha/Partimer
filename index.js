@@ -1,6 +1,6 @@
 import { beforeStart, displayMousePosition } from './utils/others.js'
 import { extract, market, money } from './utils/money-utils.js'
-import { redRobot, spring, 奧迪溫雅努斯, 實驗室 } from './utils/thunder.js'
+import { redRobot, spring, spring2, 奧迪溫雅努斯, 實驗室 } from './utils/thunder.js'
 import select from '@inquirer/select'
 
 async function start() {
@@ -18,6 +18,10 @@ async function start() {
       {
         name: '奧迪溫-雅努斯',
         value: '奧迪溫-雅努斯',
+      },
+      {
+        name: '桃源境2',
+        value: '桃源境2',
       },
       {
         name: '桃源境',
@@ -68,6 +72,10 @@ async function start() {
 
     case '桃源境':
       spring()
+      break
+
+    case '桃源境2':
+      spring2()
       break
 
     case '奧迪溫實驗室':
