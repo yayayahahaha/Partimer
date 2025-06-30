@@ -775,12 +775,102 @@ export async function spring2() {
   const left = (times = 1) => attackThrough({ direction: 'left', times, goBack: false, useAttack: buffAttack })
   const right = (times = 1) => attackThrough({ direction: 'right', times, goBack: false, useAttack: buffAttack })
 
-  const genFn = () => [s_1]
+  const genFn = () => [s_1, s_2].sort(() => Math.random() - 0.5)
   let fnList = []
   for (let i = 0; i < 100; i++) {
     if (fnList.length === 0) fnList = genFn()
     const fn = fnList.splice(0, 1)[0]
     await fn()
+  }
+
+  async function s_2() {
+    goDown()
+    await delay(50)
+    goDown()
+    await delay(50)
+    rb.keyTap('pagedown')
+    await delay(500)
+    left(1)
+    await delay(50)
+    goDown()
+    await delay(300)
+
+    rb.keyTap('up')
+    await delay(50)
+    justAttack(2)
+    await delay(50)
+    goDown()
+    await delay(50)
+    rb.keyTap('alt')
+    rb.keyTap('6')
+    await delay(50)
+    justAttack(2)
+    await delay(50)
+    right(1)
+    await delay(50)
+    if (halfChance()) {
+      rb.keyTap('t')
+      await delay(1500)
+    } else {
+      goUp()
+      await delay(50)
+    }
+    justAttack(2)
+    await delay(50)
+    left(3)
+    await delay(50)
+    goDown()
+    await delay(50)
+    justAttack(1)
+    await delay(50)
+    goDown()
+    await delay(50)
+    justAttack(2)
+    await delay(50)
+
+    hop()
+    await delay(50)
+    justAttack(1)
+    await delay(50)
+    right(1)
+    await delay(50)
+    rb.keyTap('alt')
+    rb.keyTap('6')
+    await delay(300)
+    left(1)
+    await delay(50)
+    goUp()
+    await delay(50)
+    justAttack(3)
+    await delay(50)
+    right(4)
+    await delay(50)
+    left(1)
+    await delay(50)
+    goDown()
+    await delay(50)
+    justAttack(2)
+    await delay(50)
+    right(1)
+    await delay(50)
+
+    for (let i = 0; i < 5; i++) {
+      left(3)
+      await delay(50)
+      right(3)
+      await delay(50)
+    }
+
+    goDown()
+    await delay(50)
+    goDown()
+    await delay(50)
+    right(4)
+    await delay(50)
+    halfChance() && left(4)
+    await delay(50)
+    goDown()
+    await delay(50)
   }
 
   async function s_1(buff = false) {
@@ -792,24 +882,39 @@ export async function spring2() {
     goDown()
     await delay(50)
     rb.keyTap('6')
-    await delay(50)
+    await delay(150)
     goDown()
     await delay(50)
-    right(2)
-    await delay(50)
 
-    if (halfChance()) {
-      justAttack(1)
-      await delay(50)
-      goUp({ type: 'jump' })
-      await delay(50)
-      justAttack(1)
-      await delay(50)
-      goUp({ type: 'jump' })
-      await delay(50)
-    } else {
-      rb.keyTap('t')
-      await delay(1800)
+    switch (randomNumber(2, 0)) {
+      case 0:
+        right(3)
+        await delay(50)
+        goUp({ type: 'jump' })
+        await delay(50)
+        justAttack(1)
+        await delay(50)
+        goUp({ type: 'jump' })
+        await delay(50)
+        break
+
+      case 1:
+        right(2)
+        await delay(50)
+        rb.keyTap('t')
+        await delay(1800)
+        break
+
+      case 2:
+        goDown()
+        await delay(50)
+        right(halfChance() ? 2 : 3)
+        await delay(50)
+        jumpFar()
+        await delay(150)
+        goUp({ type: 'jump' })
+        await delay(50)
+        break
     }
 
     justAttack(2)
@@ -916,14 +1021,34 @@ export async function spring2() {
       }
     }
 
-    goDown()
-    await delay(50)
-    justAttack(2)
-    goDown()
-    await delay(200)
-    left(9)
-    await delay(50)
-    goDown()
+    if (halfChance()) {
+      left(1)
+      await delay(50)
+      goDown()
+      await delay(50)
+      justAttack(2)
+      await delay(50)
+      right(1)
+      await delay(50)
+      goDown()
+      await delay(50)
+      justAttack(3)
+      await delay(50)
+      left(halfChance() ? 8 : 6)
+      await delay(50)
+      goDown()
+      await delay(50)
+    } else {
+      goDown()
+      await delay(50)
+      justAttack(2)
+      goDown()
+      await delay(200)
+      left(9)
+      await delay(50)
+      goDown()
+      await delay(50)
+    }
   }
 }
 
