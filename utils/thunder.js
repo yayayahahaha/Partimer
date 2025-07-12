@@ -10,7 +10,7 @@ const buffBetweenEach = {
   previousTimestamp: 0,
 }
 let buffList = null
-function generateBuffList(buffType = 'all') {
+function generateBuffList(allowBuffList = 'all') {
   const previousTimestamp = Date.now()
   return [
     {
@@ -79,14 +79,15 @@ function generateBuffList(buffType = 'all') {
     },
     {
       code: '6',
-      coldTime: 30 * 1000,
+      coldTime: 20 * 1000,
       priority: true,
       previousTimestamp,
       buffType: 'stay-attack',
     },
   ].filter((buffInfo) => {
-    if (buffType === 'all') return true
-    return buffType === buffInfo.buffType
+    if (allowBuffList === 'all') return true
+    const { code, buffType } = buffInfo
+    return allowBuffList.includes(buffType) || allowBuffList.includes(code)
   })
 }
 
@@ -281,6 +282,13 @@ function goUp({ type = 'top' } = {}) {
   // delay
   rb.setKeyboardDelay(200)
   rb.keyTap('7')
+
+  if (type === 'shark') {
+    rb.setKeyboardDelay(10)
+    rb.keyTap('alt')
+    rb.keyTap('d')
+    return
+  }
 
   rb.setKeyboardDelay(randomNumber(130, 100))
   rb.keyToggle('up', 'down')
@@ -769,89 +777,168 @@ export function redRobot(simple = false) {
   }
 }
 
-export async function spring2() {
-  const buffAttack = () => attack({ buffType: 'buff' })
+export async function spring() {
+  const buffAttack = () => attack({ buffType: ['buff', 'pagedown'] })
   const justAttack = (times = 1) => attackThrough({ moveFirst: false, times, goBack: false, useAttack: buffAttack })
   const left = (times = 1) => attackThrough({ direction: 'left', times, goBack: false, useAttack: buffAttack })
   const right = (times = 1) => attackThrough({ direction: 'right', times, goBack: false, useAttack: buffAttack })
 
-  const genFn = () => [s_1, s_2].sort(() => Math.random() - 0.5)
+  const genFn = () => [s_1, s_2, s_3].sort(() => Math.random() - 0.5)
   let fnList = []
   for (let i = 0; i < 100; i++) {
     if (fnList.length === 0) fnList = genFn()
     const fn = fnList.splice(0, 1)[0]
+    console.log('fn:', fn)
     await fn()
+  }
+
+  async function s_3() {
+    await _到左頂右側()
+    left(3)
+    await delay(50)
+    right(1)
+    await delay(50)
+    goDown()
+    await delay(100)
+    rb.keyTap('6')
+    await delay(300)
+    justAttack(3)
+    await delay(50)
+    goDown()
+    await delay(100)
+    hop()
+    await delay(100)
+    rb.keyTap('alt')
+    rb.keyTap('6')
+    await delay(300)
+    justAttack(1)
+    await delay(50)
+
+    if (halfChance()) {
+      await 無繩上頂()
+      justAttack(2)
+      await delay(100)
+      hop()
+      await delay(100)
+      justAttack(2)
+      await delay(50)
+    } else {
+      goDown()
+      await delay(100)
+      justAttack(2)
+      await delay(50)
+      await 無繩上頂()
+      justAttack(2)
+      await delay(50)
+    }
+
+    goDown()
+    await delay(100)
+    justAttack(1)
+    await delay(50)
+    left(3)
+    await delay(50)
+    goDown()
+    await delay(100)
+    justAttack(1)
+    await delay(50)
+    right(1)
+    await delay(50)
+    await 無繩上頂()
+    justAttack(3)
+    await delay(50)
+    goDown()
+    await delay(100)
+    justAttack(1)
+    await delay(50)
+    left(2)
+    await delay(50)
+    goDown()
+    await delay(100)
+    justAttack(1)
+    await delay(50)
+    right(2)
+    await delay(50)
+    goDown()
+    await delay(100)
+    left(randomNumber(7, 4))
+    goDown()
+    await delay(400)
+    rb.keyTap('up')
+    await delay(150)
+    justAttack(1)
+    await delay(50)
+    goDown()
+    await delay(100)
+    justAttack(2)
+    await delay(50)
+    goDown()
+    await delay(100)
+    left(randomNumber(7, 4))
+    goDown()
+    await delay(100)
   }
 
   async function s_2() {
     goDown()
-    await delay(50)
+    await delay(100)
     goDown()
-    await delay(50)
-    rb.keyTap('pagedown')
-    await delay(500)
+    await delay(100)
+    rb.keyTap('alt')
+    rb.keyTap('6')
+    await delay(300)
     left(1)
     await delay(50)
     goDown()
-    await delay(300)
+    await delay(400)
 
     rb.keyTap('up')
-    await delay(50)
-    justAttack(2)
+    await delay(150)
+    left(1)
     await delay(50)
     goDown()
-    await delay(50)
+    await delay(100)
     rb.keyTap('alt')
     rb.keyTap('6')
-    await delay(50)
+    await delay(300)
     justAttack(2)
     await delay(50)
     right(1)
     await delay(50)
-    if (halfChance()) {
-      rb.keyTap('t')
-      await delay(1500)
-    } else {
-      goUp()
-      await delay(50)
-    }
+    await 無繩上頂()
     justAttack(2)
     await delay(50)
     left(3)
     await delay(50)
     goDown()
-    await delay(50)
+    await delay(100)
     justAttack(1)
     await delay(50)
     goDown()
-    await delay(50)
-    justAttack(2)
-    await delay(50)
-
-    hop()
-    await delay(50)
-    justAttack(1)
-    await delay(50)
-    right(1)
-    await delay(50)
+    await delay(300)
     rb.keyTap('alt')
     rb.keyTap('6')
     await delay(300)
+    justAttack(2)
+    await delay(50)
+
+    right(2)
+    await delay(50)
+    await 無繩上頂()
+
+    justAttack(1)
+    await delay(50)
     left(1)
     await delay(50)
-    goUp()
+    hop()
     await delay(50)
     justAttack(3)
     await delay(50)
-    right(4)
-    await delay(50)
-    left(1)
+    right(1)
     await delay(50)
     goDown()
-    await delay(50)
+    await delay(100)
     justAttack(2)
-    await delay(50)
-    right(1)
     await delay(50)
 
     for (let i = 0; i < 5; i++) {
@@ -861,77 +948,54 @@ export async function spring2() {
       await delay(50)
     }
 
-    goDown()
-    await delay(50)
-    goDown()
-    await delay(50)
-    right(4)
-    await delay(50)
-    halfChance() && left(4)
-    await delay(50)
-    goDown()
-    await delay(50)
+    if (halfChance()) {
+      left(4)
+      await delay(50)
+      hop()
+      await delay(50)
+      justAttack(2)
+      await delay(50)
+      goDown()
+      await delay(100)
+      justAttack(1)
+      await delay(50)
+      right(2)
+      goDown()
+      await delay(100)
+      justAttack(randomNumber(7, 5))
+      await delay(50)
+      goDown()
+      await delay(100)
+    } else {
+      goDown()
+      await delay(100)
+      goDown()
+      await delay(100)
+      right(4)
+      await delay(50)
+      halfChance() && left(4)
+      await delay(50)
+      goDown()
+      await delay(100)
+    }
   }
 
-  async function s_1(buff = false) {
-    if (buff) {
-      rb.keyTap('b')
-      await delay(300)
-    }
+  async function s_1() {
+    await _到左頂右側()
 
-    goDown()
-    await delay(50)
-    rb.keyTap('6')
-    await delay(150)
-    goDown()
-    await delay(50)
-
-    switch (randomNumber(2, 0)) {
-      case 0:
-        right(3)
-        await delay(50)
-        goUp({ type: 'jump' })
-        await delay(50)
-        justAttack(1)
-        await delay(50)
-        goUp({ type: 'jump' })
-        await delay(50)
-        break
-
-      case 1:
-        right(2)
-        await delay(50)
-        rb.keyTap('t')
-        await delay(1800)
-        break
-
-      case 2:
-        goDown()
-        await delay(50)
-        right(halfChance() ? 2 : 3)
-        await delay(50)
-        jumpFar()
-        await delay(150)
-        goUp({ type: 'jump' })
-        await delay(50)
-        break
-    }
-
-    justAttack(2)
-    await delay(50)
     left(3)
     await delay(50)
     right(1)
     await delay(50)
     goDown()
-    await delay(50)
-    justAttack(2)
+    await delay(100)
+    justAttack(3)
     await delay(50)
     goDown()
-    await delay(50)
+    await delay(100)
     rb.keyTap('alt')
     rb.keyTap('6')
-    await delay(50)
+    await delay(300)
     justAttack(2)
     await delay(50)
 
@@ -940,8 +1004,7 @@ export async function spring2() {
       await delay(50)
       justAttack(2)
       await delay(50)
-      rb.keyTap('t')
-      await delay(1500)
+      await 無繩上頂()
       justAttack(2)
       await delay(50)
       hop()
@@ -956,8 +1019,9 @@ export async function spring2() {
       await delay(50)
       goDown()
       await delay(50)
-      rb.keyTap('pagedown')
-      await delay(50)
+      rb.keyTap('alt')
+      rb.keyTap('6')
+      await delay(300)
     } else {
       goDown()
       await delay(50)
@@ -975,8 +1039,9 @@ export async function spring2() {
       await delay(50)
       goDown()
       await delay(50)
-      rb.keyTap('pagedown')
-      await delay(50)
+      rb.keyTap('alt')
+      rb.keyTap('6')
+      await delay(300)
     }
 
     justAttack(2)
@@ -990,7 +1055,7 @@ export async function spring2() {
     left(3)
     await delay(50)
     goDown()
-    await delay(50)
+    await delay(100)
 
     if (halfChance()) {
       justAttack(3)
@@ -1048,6 +1113,79 @@ export async function spring2() {
       await delay(50)
       goDown()
       await delay(50)
+    }
+  }
+
+  async function _到左頂右側() {
+    goDown()
+    await delay(100)
+    rb.keyTap('6')
+    await delay(300)
+    goDown()
+    await delay(100)
+
+    // _到左頂右側
+    switch (randomNumber(2, 0)) {
+      case 0:
+        right(3)
+        await delay(50)
+        goUp({ type: 'shark' })
+        await delay(100)
+        goUp({ type: 'shark' })
+        await delay(100)
+        goUp({ type: 'shark' })
+        await delay(100)
+        justAttack(1)
+        await delay(50)
+        break
+
+      case 1:
+        right(2)
+        await delay(50)
+        rb.keyTap('t')
+        await delay(1800)
+        break
+
+      case 2:
+        goDown()
+        await delay(50)
+        turn('right')
+        await delay(50)
+        jumpFar()
+        await delay(400)
+        goUp({ type: 'shark' })
+        await delay(100)
+        justAttack(2)
+        await delay(50)
+        break
+    }
+
+    justAttack(2)
+    await delay(50)
+  }
+
+  async function 無繩上頂() {
+    switch (randomNumber(2, 0)) {
+      case 0:
+        rb.keyTap('t')
+        await delay(1800)
+        break
+
+      case 1:
+        goUp()
+        await delay(250)
+        goUp({ type: 'shark' })
+        await delay(150)
+        break
+
+      case 2:
+        goUp({ type: 'shark' })
+        await delay(150)
+        goUp({ type: 'shark' })
+        await delay(150)
+        goUp({ type: 'shark' })
+        await delay(150)
+        break
     }
   }
 }

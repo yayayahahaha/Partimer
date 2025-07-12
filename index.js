@@ -1,6 +1,6 @@
 import { beforeStart, displayMousePosition } from './utils/others.js'
 import { extract, market, money } from './utils/money-utils.js'
-import { redRobot, spring2 } from './utils/thunder.js'
+import { redRobot, spring } from './utils/thunder.js'
 import select from '@inquirer/select'
 
 async function start() {
@@ -48,7 +48,7 @@ async function start() {
       break
 
     case '桃源境':
-      spring2()
+      spring()
       break
 
     case 'money':

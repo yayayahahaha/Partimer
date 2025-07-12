@@ -32,7 +32,7 @@ const completeOffset = { x: 920, y: 120 }
 const recievedButtonOffset = { x: 970, y: 170 }
 const 頁碼左上_offset = { x: 619, y: 156 }
 const 頁碼右下_offset = { x: 668, y: 176 }
-const 當前伺服器勾勾_offset = { x: 410, y: 80 }
+const 當前伺服器勾勾_offset = { x: 410, y: 82 }
 
 // 分解欄位的按鈕的座標
 const extractOpenOffset = { x: 485, y: 489 }
@@ -524,34 +524,37 @@ async function marketAndExtract({ startWith } = {}) {
   }
 
   // 勾選當前伺服器道具
-  console.log('開始嘗試勾選僅限當前伺服器道具')
-  let isCurrentServerChecked = await waitUntil({
-    x,
-    y,
-    maxWait: 2 * 1000,
-    message: '劃',
-    place: 'current-server',
-  })
-  if (isCurrentServerChecked == null) {
-    console.log('僅限當前伺服器道具是沒有勾起來的，試著勾勾看')
-    await delay()
-    moveMouseByOffset(x, y, 當前伺服器勾勾_offset)
-    await delay()
-    clickMouse()
-    await delay()
-    moveMouseByOffset(x, y, { ...當前伺服器勾勾_offset, x: 當前伺服器勾勾_offset.x + 50 })
-  }
-  isCurrentServerChecked = await waitUntil({
-    x,
-    y,
-    maxWait: 10 * 1000,
-    message: '劃',
-    place: 'current-server',
-  })
-  if (isCurrentServerChecked == null) {
-    console.log('勾不起來..')
-    return { status: MARKET_STATUS_MAP.勾不起來 }
-  }
+  await (async function checkCurrentServer(tryCount = 5) {
+    console.log('開始嘗試勾選僅限當前伺服器道具')
+    let isCurrentServerChecked = await waitUntil({
+      x,
+      y,
+      maxWait: 2 * 1000,
+      message: '劃',
+      place: 'current-server',
+    })
+    if (isCurrentServerChecked == null) {
+      console.log('僅限當前伺服器道具是沒有勾起來的，試著勾勾看')
+      await delay()
+      moveMouseByOffset(x, y, 當前伺服器勾勾_offset)
+      await delay()
+      clickMouse()
+      await delay()
+      moveMouseByOffset(x, y, { ...當前伺服器勾勾_offset, x: 當前伺服器勾勾_offset.x + 50 })
+    }
+    isCurrentServerChecked = await waitUntil({
+      x,
+      y,
+      maxWait: 10 * 1000,
+      message: '劃',
+      place: 'current-server',
+    })
+    if (isCurrentServerChecked == null) {
+      console.log('勾不起來..')
+      if (tryCount < 0) return { status: MARKET_STATUS_MAP.勾不起來 }
+      checkCurrentServer(tryCount - 1)
+    }
+  })()
   console.log('勾選成功')
 
   const marketResult = await market()
@@ -743,7 +746,7 @@ export async function extract({ paramRow = 1, paramColumn = 7 } = {}) {
   }
 
   function _checkHasExtraHint() {
-    const hintOkPoint = { x: x + 791, y: y + 444, color: '99dd00' }
+    const hintOkPoint = { x: x + 792, y: y + 388, color: '2ca4ba' }
     const hintOkColor = rb.getPixelColor(hintOkPoint.x, hintOkPoint.y)
     const hasMessage = hintOkColor === hintOkPoint.color
     if (hasMessage) pressEnter()
