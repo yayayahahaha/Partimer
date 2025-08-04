@@ -1,16 +1,12 @@
 import { beforeStart, displayMousePosition } from './utils/others.js'
 import { extract, market, money } from './utils/money-utils.js'
-import { redRobot, spring } from './utils/thunder.js'
+import { spring } from './utils/thunder.js'
 import select from '@inquirer/select'
 
 async function start() {
   const selectAnswer = await select({
     message: '想做什麼呢',
     choices: [
-      {
-        name: '奧迪溫-左右',
-        value: '奧迪溫-左右',
-      },
       {
         name: '桃源境',
         value: '桃源境',
@@ -43,10 +39,6 @@ async function start() {
 
   await beforeStart(3)
   switch (selectAnswer) {
-    case '奧迪溫-左右':
-      redRobot(true)
-      break
-
     case '桃源境':
       spring()
       break
