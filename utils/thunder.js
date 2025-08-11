@@ -333,8 +333,9 @@ function jumpFar() {
 function halfChance() {
   return Math.random() > 0.5
 }
-function randomNumber(max = 10, min = 1) {
-  if (max < min) console.log('[randomNumber] max is smaller than min!', max, min)
+function randomNumber(oriMax = 10, oriMin = 1) {
+  const max = Math.max(oriMax, oriMin)
+  const min = Math.min(oriMax, oriMin)
 
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
@@ -758,6 +759,498 @@ export async function spring() {
         await delay(150)
         goUp({ type: 'shark' })
         await delay(150)
+        goUp({ type: 'shark' })
+        await delay(150)
+        break
+    }
+  }
+}
+
+export async function winter() {
+  const buffAttack = () => attack({ buffType: ['buff', 'pagedown'] })
+  const justAttack = async (times = 1) => {
+    attackThrough({ moveFirst: false, times, goBack: false, useAttack: buffAttack })
+    await delay(50)
+  }
+
+  const left = async (times = 1) => {
+    attackThrough({ direction: 'left', times, goBack: false, useAttack: buffAttack })
+    await delay(50)
+  }
+  const right = async (times = 1) => {
+    attackThrough({ direction: 'right', times, goBack: false, useAttack: buffAttack })
+    await delay(50)
+  }
+
+  const ball = async () => {
+    rb.keyTap('6')
+    await delay(300)
+  }
+
+  const 瞬移 = async () => {
+    await delay(300)
+    rb.keyTap('up')
+    await delay(200)
+  }
+
+  const shark = async () => {
+    goUp({ type: 'shark' })
+    await delay(150)
+  }
+
+  const genFn = () => [ball3].sort(() => Math.random() - 0.5)
+  let fnList = []
+  for (let i = 0; i < 100; i++) {
+    if (fnList.length === 0) fnList = genFn()
+    const fn = fnList.splice(0, 1)[0]
+    console.log('fn:', fn)
+    await fn()
+  }
+
+  async function ball3() {
+    const ball3Result = randomNumber(2, 1)
+    console.log('ball3Result:', ball3Result)
+
+    switch (ball3Result) {
+      case 1:
+        await 右球()
+        await 右球回家()
+        break
+
+      case 2:
+        await ballRightFlow()
+        break
+    }
+
+    await 時間()
+  }
+
+  async function ballRightFlow() {
+    await 瞬移()
+    await left(1)
+    await ball()
+
+    await 右球中球()
+    await 中球左球()
+    await 左球回家()
+  }
+
+  async function 右球中球() {
+    const 右球中球Result = randomNumber(2, 1)
+    console.log('右球中球Result: ', 右球中球Result)
+
+    switch (右球中球Result) {
+      case 1:
+        hop()
+        await delay(50)
+        await justAttack(2)
+        goDown()
+        await delay(200)
+        await justAttack(2)
+        await ball()
+        break
+
+      case 2:
+        await shark()
+        await justAttack(2)
+        goDown()
+        await delay(200)
+        await right(2)
+        goDown()
+        await delay(200)
+        await left(3)
+        await ball()
+        break
+    }
+  }
+  async function 中球左球() {
+    const 中球左球Result = randomNumber(2, 1)
+    console.log('中球左球Result: ', 中球左球Result)
+
+    switch (中球左球Result) {
+      case 1:
+        hop()
+        await delay(50)
+        await justAttack(1)
+        hop()
+        await delay(50)
+        await justAttack(3)
+        await right(1)
+        await shark()
+        await justAttack(1)
+        await ball()
+        break
+
+      case 2:
+        await shark()
+        await justAttack(1)
+        hop()
+        await delay(50)
+        await justAttack(1)
+        hop()
+        await delay(50)
+        await justAttack(2)
+        await right(3)
+        await ball()
+        break
+    }
+  }
+  async function 左球回家() {
+    const 左球回家Result = randomNumber(2, 1)
+    console.log('左球回家Result: ', 左球回家Result)
+
+    switch (左球回家Result) {
+      case 1:
+        goDown()
+        await delay(200)
+        await left(3)
+        goDown()
+        await delay(200)
+        await right(5, 7)
+        goDown()
+        await delay(200)
+        break
+
+      case 2:
+        await left(1)
+        await shark()
+        await justAttack(2)
+        await right(3)
+        goDown()
+        await delay(200)
+        await justAttack(2)
+        goDown()
+        await delay(200)
+        await justAttack(1)
+        goDown()
+        await delay(200)
+        await right(2, 4)
+        goDown()
+        await delay(200)
+        break
+    }
+  }
+
+  async function 時間() {
+    const list1 = [中平移, 右上, 右上左上]
+    const list2 = [上圈, 下圈, 瞬下回]
+    let f1 = list1[randomNumber(list1.length - 1, 0)]
+    let f2 = list2[randomNumber(list2.length - 1, 0)]
+
+    ;[f1, f2] = randomNumber(1, 0) ? [f1, f2] : [f2, f1]
+
+    console.log('時間: ', f1)
+    await f1()
+    console.log('時間: ', f2)
+    await f2()
+
+    async function 瞬下回() {
+      await 瞬移()
+      await left(1)
+      goDown()
+      await delay(200)
+      goDown()
+      await delay(200)
+      await right(2)
+      await left(5, 8)
+      goDown()
+      await delay(200)
+    }
+
+    async function 右上左上() {
+      await 瞬移()
+      await left(1)
+      await shark()
+      await justAttack(3)
+      await right(3)
+      await left(4)
+      goDown()
+      await delay(200)
+      await justAttack(1)
+      hop()
+      await delay(50)
+      await justAttack(2)
+      hop()
+      await delay(50)
+      await shark()
+      await justAttack(3)
+      await right(3)
+      await left(3)
+      goDown()
+      await delay(200)
+      goDown()
+      await delay(200)
+      await right(4)
+      goDown()
+      await delay(200)
+      await justAttack(5)
+      goDown()
+      await delay(200)
+    }
+
+    async function 右上() {
+      await 平移最右()
+      await left(2)
+      await shark()
+      await justAttack(3)
+      goDown()
+      await delay(200)
+      await justAttack(1)
+      goDown()
+      await delay(200)
+
+      await justAttack(2)
+      goDown()
+      await delay(200)
+      await justAttack(randomNumber(5, 3))
+
+      goDown()
+      await delay(200)
+    }
+
+    async function 中平移() {
+      await 平移最右()
+
+      turn('left')
+      turn('left')
+      turn('left')
+
+      goDown()
+      await delay(200)
+      await right(1)
+      await left(2)
+      hop()
+      await delay(50)
+      await justAttack(3)
+      goDown()
+      await delay(200)
+      await left(3, 5)
+      goDown()
+      await delay(200)
+    }
+
+    async function 上圈() {
+      await right(2)
+      await shark()
+      await justAttack(2)
+      await left(2)
+      await right(3)
+      await left(3)
+      goDown()
+      await delay(200)
+      await justAttack(1)
+      await right(1)
+      goDown()
+      await delay(200)
+      await justAttack(2)
+      goDown()
+      await delay(200)
+      await right(randomNumber(7, 5))
+      goDown()
+      await delay(200)
+    }
+
+    async function 下圈() {
+      switch (randomNumber(1, 1)) {
+        case 1:
+          await right(2)
+          goDown()
+          await delay(200)
+          await justAttack(2)
+          goDown()
+          await delay(200)
+          await justAttack(randomNumber(7, 3))
+          await left(randomNumber(6, 5))
+          goDown()
+          await delay(200)
+          break
+
+        case 2:
+      }
+    }
+  }
+
+  async function 平移最右() {
+    await right(2)
+    hop()
+    await delay(50)
+    await justAttack(2)
+    hop()
+    await delay(50)
+    await justAttack(2)
+    hop()
+    await delay(50)
+    await justAttack(2)
+    hop()
+    await delay(50)
+    await justAttack(1)
+  }
+
+  async function 中球() {
+    const result = randomNumber(3, 1)
+    console.log('中球: ', result)
+
+    switch (result) {
+      case 1:
+        await right(2)
+        await ball()
+        goDown()
+        await delay(200)
+        await right(2)
+        hop()
+        await delay(50)
+        await justAttack(2)
+        await ball()
+        break
+
+      case 2:
+        await right(2)
+        await ball()
+        hop()
+        await delay(50)
+        await justAttack(1)
+        goDown()
+        await delay(200)
+        await justAttack(1)
+        await ball()
+        break
+
+      case 3:
+        await right(2)
+        await ball()
+        goUp({ type: 'shark' })
+        await delay(150)
+        await justAttack(2)
+        goDown()
+        await delay(200)
+        await justAttack(1)
+        goDown()
+        await delay(200)
+        await justAttack(1)
+        await ball()
+        break
+    }
+
+    await justAttack(1)
+  }
+
+  async function 中球右球() {
+    const n = randomNumber(3, 1)
+    console.log('中球右球:', n)
+
+    switch (n) {
+      case 3:
+        goDown()
+        await delay(200)
+        await justAttack(3)
+        await left(5, 3)
+        goDown()
+        await delay(200)
+        await 瞬移()
+        await justAttack(1)
+        await ball()
+        break
+
+      case 1:
+        hop()
+        await delay(50)
+        await justAttack(3)
+        await _上頂()
+        await justAttack(2)
+        goDown()
+        await delay(200)
+        await justAttack(1)
+        await left(2)
+        await ball()
+
+        break
+
+      case 2:
+        goUp({ type: 'shark' })
+        await delay(250)
+        await justAttack(2)
+        hop()
+        await delay(50)
+        await justAttack(2)
+        hop()
+        await delay(50)
+        await left(2)
+        await ball()
+    }
+  }
+
+  async function 右球() {
+    await 中球()
+    await 中球右球()
+  }
+
+  async function 右球回家() {
+    const n = randomNumber(3, 1)
+    console.log('右球回家:', n)
+
+    switch (n) {
+      case 3:
+        await shark()
+        await justAttack(2)
+        goDown()
+        await delay(200)
+        await right(2)
+        goDown()
+        await delay(200)
+        await left(2)
+        goDown()
+        await delay(200)
+        await right(3)
+        await left(4, 7)
+        goDown()
+        await delay(200)
+        break
+
+      case 1:
+        goDown()
+        await delay(200)
+        await justAttack(3)
+        goDown()
+        await delay(200)
+        await justAttack(randomNumber(5, 3))
+        goDown()
+        await delay(200)
+        break
+
+      case 2:
+        hop()
+        await delay(50)
+        await justAttack(randomNumber(2, 1))
+        hop()
+        await delay(50)
+        await justAttack(randomNumber(2, 1))
+        hop()
+        await delay(50)
+        await justAttack(randomNumber(2, 1))
+        hop()
+        await delay(50)
+        await justAttack(randomNumber(2, 1))
+        await right(1)
+        goDown()
+        await delay(200)
+        goDown()
+        await delay(200)
+        goDown()
+        await delay(200)
+        break
+    }
+  }
+
+  async function _上頂() {
+    switch (randomNumber(2, 1)) {
+      case 1:
+        rb.keyTap('t')
+        await delay(1800)
+        break
+
+      case 2:
+        goUp()
+        await delay(250)
         goUp({ type: 'shark' })
         await delay(150)
         break

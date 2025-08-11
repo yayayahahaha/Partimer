@@ -1,6 +1,6 @@
 import { beforeStart, displayMousePosition } from './utils/others.js'
 import { extract, market, money } from './utils/money-utils.js'
-import { spring } from './utils/thunder.js'
+import { spring, winter } from './utils/thunder.js'
 import select from '@inquirer/select'
 
 async function start() {
@@ -10,6 +10,10 @@ async function start() {
       {
         name: '桃源境',
         value: '桃源境',
+      },
+      {
+        name: '冬天',
+        value: '冬天',
       },
       {
         name: 'money',
@@ -41,6 +45,10 @@ async function start() {
   switch (selectAnswer) {
     case '桃源境':
       spring()
+      break
+
+    case '冬天':
+      winter()
       break
 
     case 'money':
