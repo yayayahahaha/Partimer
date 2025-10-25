@@ -905,6 +905,10 @@ export async function queen() {
     attackThrough({ direction: 'right', times, goBack: false, useAttack: buffAttack })
     await delay(50)
   }
+  const bigJump = async () => {
+    jumpFar()
+    await delay(500)
+  }
 
   const ball = async () => {
     rb.keyTap('6')
@@ -1218,7 +1222,7 @@ export async function queen() {
           await hopJump()
           await delay(500)
           await 瞬移()
-          await right(1)
+          await right(2)
           await shark()
           await justAttack(2)
           await down()
@@ -1232,13 +1236,16 @@ export async function queen() {
           rb.keyTap('t')
           await delay(1500)
 
-          await delay(2000)
-          turn('left')
+          await left(2)
 
-          await 瞬移()
-          await right(3)
+          await bigJump()
 
-          await left(9)
+          await justAttack(3)
+          await down()
+          await justAttack(1)
+          await bigJump()
+          await delay(1500)
+          await justAttack(1)
           await hopJump()
           await delay(500)
           break

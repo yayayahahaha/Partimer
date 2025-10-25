@@ -74,7 +74,7 @@ export function displayMousePosition() {
   console.log('absolute position: ', ax, ay)
   console.log('application position: ', x, y)
   // console.log('color: ', rb.getPixelColor(997, 543))
-  console.log('color: ', rb.getPixelColor(ax - 5, ay - 5))
+  console.log('color: ', rb.getPixelColor(ax - 5, ay - 5), ax - 5 - x, ay - 5 - y)
   console.log('offset position: ', ax - x, ay - y)
   console.log()
 

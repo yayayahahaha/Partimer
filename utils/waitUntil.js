@@ -10,13 +10,13 @@ const 正在搜尋中訊息左上_offset = { x: 442, y: 382 }
 const 正在搜尋中訊息右下_offset = { x: 598, y: 416 }
 const 領取中訊息左上_offset = { x: 405, y: 366 }
 const 領取中訊息右下_offset = { x: 600, y: 393 }
-const 分解訊息左上_offset = { x: 651, y: 392 }
-const 分解訊息右下_offset = { x: 727, y: 420 }
+const 分解訊息左上_offset = { x: 651, y: 422 }
+const 分解訊息右下_offset = { x: 722, y: 444 }
 
 const 鎮名左上_Offset = { x: 120, y: 74 }
 const 鎮名右下_Offset = { x: 185, y: 96 }
-const 市場標題左上_Offset = { x: 342, y: 77 }
-const 市場標題右下_Offset = { x: 398, y: 98 }
+const 市場標題左上_Offset = { x: 496, y: 118 }
+const 市場標題右下_Offset = { x: 560, y: 141 }
 const 市場搜尋左上_offset = { x: 100, y: 81 }
 const 市場搜尋右下_offset = { x: 250, y: 96 }
 const 當前伺服器勾勾左上_offset = { x: 406, y: 80 }

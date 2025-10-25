@@ -9,9 +9,9 @@ const pressEnter = () => rb.keyTap('enter')
 
 // 1366 * 768
 // 城鎮
-const 裝備_offset = { x: 30, y: 124 }
-const 背包整理_offest = { x: 172, y: 486 }
-const 背包向上_offest = { x: 208, y: 496 }
+const 裝備_offset = { x: 85, y: 75 }
+const 背包整理_offest = { x: 70, y: 110 }
+const 背包向上_offest = { x: 105, y: 115 }
 
 // market
 const 查詢_offset = { x: 115, y: 126 }
@@ -34,9 +34,11 @@ const 頁碼左上_offset = { x: 619, y: 156 }
 const 頁碼右下_offset = { x: 668, y: 176 }
 const 當前伺服器勾勾_offset = { x: 410, y: 82 }
 
+const 進入市場ICON_offset = { x: 440, y: 773 }
+
 // 分解欄位的按鈕的座標
-const extractOpenOffset = { x: 485, y: 489 }
-const confirmOffset = { x: 809, y: 510 }
+const 開啟分解視窗按鈕_offset = { x: 555, y: 525 }
+const 確認分解按鈕_offset = { x: 830, y: 527 }
 
 // 收回道具的結果的狀態 mapping 表
 const RECIEVE_ITEMS_STATUS_MAP = {
@@ -505,8 +507,9 @@ async function marketAndExtract({ startWith } = {}) {
       return { status: MARKET_STATUS_MAP.到不了鎮上 }
     }
 
-    keyIn([']', ...Array(4).fill('down')])
-    rb.keyTap('enter')
+    moveMouseByOffset(x, y, 進入市場ICON_offset)
+    await delay()
+    clickMouse()
   } else if (startWith === 'market') {
     console.log('直接從市場開始')
   }
@@ -515,7 +518,7 @@ async function marketAndExtract({ startWith } = {}) {
     x,
     y,
     maxWait: 10 * 1000,
-    message: '完全一致',
+    message: '追蹤目錄',
     place: 'market-title',
   })
   if (inMarket == null) {
@@ -573,14 +576,14 @@ async function marketAndExtract({ startWith } = {}) {
 
 // 進入城鎮
 // 讓右上角的小地圖包含地圖名稱一起顯示
-// 把包包移動到切齊地圖名稱下緣、剛好遮住小地圖
+// 把包包移動到最左上角
 // 然後把 extract function 的座標設定為第一個想要分解的物品  let row = paramRow // 第一個要被分解的物品的座標
-export async function extract({ paramRow = 1, paramColumn = 7 } = {}) {
+export async function extract({ paramRow = 2, paramColumn = 5 } = {}) {
   const { x, y } = getApplicationInfo()
   const confirmColor = {
-    ax: x + confirmOffset.x,
-    ay: y + confirmOffset.y,
-    color: 'ddfffff',
+    ax: x + 798,
+    ay: y + 521,
+    color: 'ffffff',
   }
 
   // 等待畫面中 place: town 的地方的文字變成 梅斯特 的意思
@@ -613,11 +616,11 @@ export async function extract({ paramRow = 1, paramColumn = 7 } = {}) {
   // 設定好第一個座標
   let row = paramRow
   let column = paramColumn // 第一個要被分解的物品的座標
-  const eachBlockSize = 42
-  const firstCoordinate = { x: 30, y: 155 }
+  const eachBlockSize = 47
+  const firstCoordinate = { x: 50, y: 150 }
 
   // 開啟分解框
-  moveMouseByOffset(x, y, extractOpenOffset, { randomX: 2, randomY: 2 })
+  moveMouseByOffset(x, y, 開啟分解視窗按鈕_offset, { randomX: 2, randomY: 2 })
   await delay()
   clickMouse()
   await delay()
@@ -637,9 +640,20 @@ export async function extract({ paramRow = 1, paramColumn = 7 } = {}) {
     if (index % 5 === 0 && !everHas) {
       // 檢查是不是做了點擊的動作之後，仍舊符合關閉的條件
       // 也是要先移動去空白的地方，不然會被情詳遮到
-      moveMouseByOffset(x, y, { x: confirmOffset.x + 50, y: confirmOffset.y + 50 }, { randomX: 5, randomY: 2 })
+      moveMouseByOffset(
+        x,
+        y,
+        { x: 確認分解按鈕_offset.x + 50, y: 確認分解按鈕_offset.y + 50 },
+        { randomX: 5, randomY: 2 }
+      )
       await delay()
-      if (rb.getPixelColor(confirmColor.ax - 5, confirmColor.ay - 5) !== 'ffffff') {
+
+      // 然後要移回來 hover, 才能變色
+      moveMouseByOffset(x, y, { x: 確認分解按鈕_offset.x, y: 確認分解按鈕_offset.y }, { randomX: 5, randomY: 2 })
+      await delay()
+
+      const gotCheckedPointColor = rb.getPixelColor(confirmColor.ax, confirmColor.ay)
+      if (gotCheckedPointColor !== confirmColor.color) {
         console.log('已經沒了!')
         break
       } else {
@@ -654,19 +668,8 @@ export async function extract({ paramRow = 1, paramColumn = 7 } = {}) {
 
     const maxNumberOfExtractOnce = 30
     if (index % maxNumberOfExtractOnce === 0) {
-      // 先移到空白的地方, 避免那些道具詳情影響畫面
-      moveMouseByOffset(x, y, { x: confirmOffset.x + 50, y: confirmOffset.y + 50 }, { randomX: 5, randomY: 2 })
+      moveMouseByOffset(x, y, 確認分解按鈕_offset, { randomX: 5, randomY: 2 })
       await delay()
-
-      moveMouseByOffset(x, y, confirmOffset, { randomX: 5, randomY: 2 })
-      await delay()
-
-      // 檢查顏色
-      const currentColor = rb.getPixelColor(confirmColor.ax - 5, confirmColor.ay - 5)
-      if (currentColor !== 'ffffff') {
-        console.log('已經沒了!')
-        break
-      }
 
       clickMouse()
       await delay()
@@ -676,7 +679,7 @@ export async function extract({ paramRow = 1, paramColumn = 7 } = {}) {
       await waitUntil({
         x,
         y,
-        message: '完成', // 這邊真的有點不準確..
+        message: '完成',
         maxWait: 10 * 1000,
         interval: 200,
         place: 'extract',
@@ -705,7 +708,7 @@ export async function extract({ paramRow = 1, paramColumn = 7 } = {}) {
       column = paramColumn
 
       // 再重新把分解框叫出來
-      moveMouseByOffset(x, y, extractOpenOffset, { randomX: 2, randomY: 2 })
+      moveMouseByOffset(x, y, 開啟分解視窗按鈕_offset, { randomX: 2, randomY: 2 })
       await delay()
       clickMouse()
       await delay()
