@@ -33,6 +33,7 @@ const recievedButtonOffset = { x: 970, y: 170 }
 const 頁碼左上_offset = { x: 619, y: 156 }
 const 頁碼右下_offset = { x: 668, y: 176 }
 const 當前伺服器勾勾_offset = { x: 410, y: 82 }
+const 重新登入_offset = { x: 877, y: 170 }
 
 const 進入市場ICON_offset = { x: 440, y: 773 }
 
@@ -246,6 +247,8 @@ async function buyByOffset(config) {
   ])
 
   await delay()
+  pressEnter()
+  await delay()
 
   // 沒資料的話
   if (!(await checkPage(x, y))) {
@@ -281,14 +284,20 @@ async function recieveItems(x, y, totalBuy) {
     return { recieveStatus: RECIEVE_ITEMS_STATUS_MAP.SUCCESS }
   }
 
-  // TODO(flyc): 這個動作是? 先註解起來吧
-  // pressEnter()
-  // await delay()
-
   // move to complete button
   moveMouseByOffset(x, y, completeOffset)
   await delay()
   clickMouse()
+  await delay()
+
+  // 重新登錄販售物
+  moveMouseByOffset(x, y, 重新登入_offset)
+  await delay()
+  clickMouse()
+  await delay()
+  pressEnter()
+  await delay()
+  pressEnter()
   await delay()
 
   // move to accept all recieved items
@@ -302,7 +311,6 @@ async function recieveItems(x, y, totalBuy) {
 
   // 有時候會出現明明東西還沒有領完，但領取的過程自己中斷的情況
   // 所以需要判斷「領取中」的字樣消失的時候，是真的結束還是其實是 bug
-
   console.log(`\x1b[1m\x1b[36m${'檢查有沒有出現領取中'} \x1b[0m`)
   let has領取中 = await waitUntil({
     x,
@@ -507,9 +515,13 @@ async function marketAndExtract({ startWith } = {}) {
       return { status: MARKET_STATUS_MAP.到不了鎮上 }
     }
 
+    await delay()
+    await delay()
     moveMouseByOffset(x, y, 進入市場ICON_offset)
     await delay()
+    await delay()
     clickMouse()
+    await delay()
   } else if (startWith === 'market') {
     console.log('直接從市場開始')
   }
@@ -833,5 +845,8 @@ export async function market() {
 
 export async function money({ startWith = 'town' } = {}) {
   const { status } = await marketAndExtract({ startWith })
-  if (status !== MARKET_STATUS_MAP.MARKET_NO_MORE_STATUS) await money()
+  if (status !== MARKET_STATUS_MAP.MARKET_NO_MORE_STATUS) {
+    await delay(10 * 1000)
+    await money()
+  }
 }
